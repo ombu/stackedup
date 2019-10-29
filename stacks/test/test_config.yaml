@@ -1,0 +1,39 @@
+project_name: stacks
+
+stack_types:
+  - account
+  - cluster
+  - application
+  - transaction-pipeline
+  - deployment-pipeline
+
+accounts:
+  - name: test_aws_account1
+    id: "637300000123"
+
+clusters:
+  - name: core
+    account: test_aws_account1
+    parameters:
+      KeyName: my_key
+      InstnaceType: t3.small
+      ClusterSize: 2
+      DbAllocatedAtorage: 5
+      DbInstanceType: db.t3.small
+    stack_name: stacks-cluster-core
+
+instances:
+  - name: testing
+    account: test_aws_account1
+    cluster: core
+    application:
+      parameters:
+        domain: testing1.example.org
+        listener_priority: 1001
+      stack_name: stacks-application-testing1
+    transaction_pipeline:
+      stack_name: stacks-transaction-pipeline-testing1
+    deployment_pipeline:
+      stack_name: stacks-deployment-pipeline-testing1
+      parameters:
+        Branch: testing1
