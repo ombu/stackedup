@@ -8,11 +8,11 @@ stack_types:
   - deployment-pipeline
 
 accounts:
-  - name: test_aws_account1
+  test_aws_account1:
     id: "637300000123"
 
 clusters:
-  - name: core
+  core:
     account: test_aws_account1
     parameters:
       KeyName: my_key
@@ -23,7 +23,7 @@ clusters:
     stack_name: stacks-cluster-core
 
 instances:
-  - name: testing
+  testing1:
     account: test_aws_account1
     cluster: core
     application:

@@ -4,8 +4,8 @@ import os
 import boto3
 from botocore.exceptions import WaiterError
 import subprocess
+from tabulate import tabulate
 
-cf_client = boto3.client("cloudformation")
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class Stack:
             raise Exception("Cannot redefine stack_name")
         date = f"{datetime.datetime.now():%Y%m%d%H%M}"
         self.stack_name = "-".join(
-            (self.project_name, self.instance_name, self.stack_type, date)
+            (self.stack_type, self.name, date)
         )
         logger.info("Setting stack name to %s" % self.stack_name)
         return self.stack_name
@@ -64,13 +64,14 @@ class Stack:
                 "--s3-bucket",
                 bucket,
                 "--s3-prefix",
-                self.instance_name,
+                self.name,
             ]
         )
         return packaged_template.decode("utf-8")
 
     def create(self, DisableRollback=True, **kwargs):
         kwargs["StackName"] = self.create_stack_name()
+        cf_client = boto3.client("cloudformation")
         cf_client.create_stack(**kwargs)
         logger.info("Creating stack %s" % self.stack_name)
         try:
@@ -80,3 +81,32 @@ class Stack:
             )
         except WaiterError:
             logger.error("Stack creation failed for %s" % self.stack_name)
+
+    @staticmethod
+    def update(DisableRollback=True, **kwargs):
+        cf_client = boto3.client("cloudformation")
+        cf_client.update_stack(**kwargs)
+        logger.info("Updating stack %s" % kwargs["StackName"])
+        try:
+            cf_client.get_waiter("stack_update_complete").wait(
+                StackName=kwargs["StackName"],
+                WaiterConfig={"Delay": 20},  # checks the stack status every X seconds
+            )
+        except WaiterError:
+            logger.error("Stack update failed for %s" % kwargs["StackName"])
+
+    @staticmethod
+    def get_outputs(stack_name):
+        cf_client = boto3.client("cloudformation")
+        response = cf_client.describe_stacks(StackName=stack_name)
+        return response["Stacks"][0]["Outputs"]
+
+    @staticmethod
+    def tabulate_outputs(outputs):
+        for d in outputs:
+            try:
+                del d["Description"]
+                del d["ExportName"]
+            except KeyError:
+                pass
+        return tabulate(outputs, headers="keys")
