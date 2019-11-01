@@ -18,5 +18,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["boto3==1.10.2", "awscli==1.16.266"],
+    install_requires=["boto3==1.10.2", "awscli==1.16.266", "tabulate==0.8.5"],
 )
