@@ -1,0 +1,10 @@
+Parameters:
+  BucketName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: String
+Resources:
+  HelloBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      AccessControl: PublicRead

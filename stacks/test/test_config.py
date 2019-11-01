@@ -16,7 +16,9 @@ class TestConfig(unittest.TestCase):
         self.config = config_load(os.path.join(path, "test_config.yaml"))
 
     def test_config_get_account_id(self):
-        self.assertEqual(config_get_account_id(self.config, "instance", "testing1"), "637300000123")
+        self.assertEqual(
+            config_get_account_id(self.config, "instance", "testing1"), "637300000123"
+        )
 
     def test_config_get_project_name(self):
         self.assertEqual(config_get_project_name(self.config), "stacks")
@@ -36,15 +38,15 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(direct_parameters[0]["ParameterKey"])
 
     def test_get_stack_name_instance(self):
-        instance = "testing1"
+        name = "testing1"
         component = "application"
-        stack_name = config_get_stack_name(self.config, instance, component)
+        stack_name = config_get_stack_name(self.config, name, component)
         self.assertEqual(stack_name, "stacks-application-testing1")
 
     def test_get_stack_name_cluster(self):
-        instance = "testing1"
+        name = "core"
         component = "cluster"
-        stack_name = config_get_stack_name(self.config, instance, component)
+        stack_name = config_get_stack_name(self.config, name, component)
         self.assertEqual(stack_name, "stacks-cluster-core")
 
 
