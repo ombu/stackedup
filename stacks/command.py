@@ -28,9 +28,7 @@ class StackCommand(BaseCommand):
     def __init__(self, *args):
         super().__init__(*args)
         self.argparser.add_argument(
-            # TODO: This argument needs validation
-            "stack_type",
-            type=str,  # , choices=self.config["stack_types"]
+            "stack_type", type=str, choices=self.config["stack_types"]
         )
         self.argparser.add_argument(
             # TODO: This argument needs validation
@@ -40,6 +38,19 @@ class StackCommand(BaseCommand):
 
     def run(self):
         super().run()
+
+
+class AccountCommand(BaseCommand):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.argparser.add_argument(
+            "account_name", type=str, choices=list(self.config["accounts"].keys())
+        )
+        self._args = self.argparser.parse_args()
+
+
+def run(self):
+    super().run()
 
 
 def get_boto_client(client_type, config, account_name):

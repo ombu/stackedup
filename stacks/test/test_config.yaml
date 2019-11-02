@@ -14,6 +14,7 @@ accounts:
 clusters:
   core:
     account: test_aws_account1
+    region: us-west-2
     parameters:
       KeyName: my_key
       InstnaceType: t3.small
@@ -22,10 +23,17 @@ clusters:
       DbInstanceType: db.t3.small
     stack_name: stacks-cluster-core
 
+  core2:
+    account: test_aws_account1
+    region: us-east-1
+    parameters:
+      KeyName: my_key
+    stack_name: stacks-cluster-core2
+
 instances:
   testing1:
     account: test_aws_account1
-    cluster: core
+    cluster: core2
     application:
       parameters:
         domain: testing1.example.org

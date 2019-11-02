@@ -25,7 +25,7 @@ def config_get_account_name(config, stack_type, name):
 def config_get_account_id(config, stack_type, name):
     if stack_type == "account":
         return None
-        #return config_get_active_account_id()
+        # return config_get_active_account_id()
     else:
         account_name = config_get_account_name(config, stack_type, name)
     aws_account_id = config["accounts"][account_name]["id"]
@@ -97,6 +97,17 @@ def config_get_stack_config(config, stack_type, name):
             {"account": instance["account"], "cluster": instance["cluster"],}
         )
         return stack_config
+
+
+def config_get_stack_region(config, stack_type, name):
+    """Returns the slice of a project config file that defines a specific stack"""
+    if stack_type == "account":
+        exit("Only cluster and instance stack types have regions.")
+    if stack_type == "cluster":
+        return config[_pluralize_component_name(stack_type)][name]["region"]
+    else:
+        cluster = config["instances"][name]["cluster"]
+        return config["clusters"][cluster]["region"]
 
 
 def _pluralize_component_name(name):

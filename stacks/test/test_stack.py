@@ -1,12 +1,15 @@
+import datetime
+import os
 import unittest
 import yaml
 from stacks.stack import Stack
-import datetime
-import os
+from stacks.config import config_load, config_get_stack_region
 
 
 class TestStack(unittest.TestCase):
     def setUp(self):
+        path = os.path.dirname(os.path.abspath(__file__))
+        self.config = config_load(os.path.join(path, "test_config.yaml"))
         self.live_stack_yaml = """
 account: aws_account_for_the_stack
 parameters:
@@ -25,12 +28,18 @@ parameters:
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.live_stack_yaml, Loader=yaml.FullLoader),
+            region=config_get_stack_region(
+                self.config, "cluster", "core"
+            ),
             template_dir=self.test_template_path,
         )
         self.new_stack = Stack(
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.new_stack_yaml, Loader=yaml.FullLoader),
+            region=config_get_stack_region(
+                self.config, "cluster", "core"
+            ),
             template_dir=self.test_template_path,
         )
 

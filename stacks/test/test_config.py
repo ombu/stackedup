@@ -7,6 +7,7 @@ from stacks.config import (
     config_get_account_id,
     config_get_project_name,
     config_get_stack_name,
+    config_get_stack_region,
 )
 
 
@@ -48,6 +49,14 @@ class TestConfig(unittest.TestCase):
         component = "cluster"
         stack_name = config_get_stack_name(self.config, name, component)
         self.assertEqual(stack_name, "stacks-cluster-core")
+
+    def test_get_cluster_region(self):
+        region = config_get_stack_region(self.config, "cluster", "core")
+        self.assertEqual("us-west-2", region)
+
+    def test_get_instance_region(self):
+        region = config_get_stack_region(self.config, "application", "testing1")
+        self.assertEqual("us-east-1", region)
 
 
 if __name__ == "__main__":

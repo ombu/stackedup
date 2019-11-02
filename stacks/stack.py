@@ -1,11 +1,12 @@
 import datetime
 import logging
 import os
-from botocore.exceptions import WaiterError
 import subprocess
+import boto3
+import botocore.exceptions
 from tabulate import tabulate
-from stacks.command import get_boto_client
 from typing import AnyStr, Dict
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ class Stack:
         self,
         stack_type: AnyStr,
         name: AnyStr,
+        region: AnyStr,
         stack_config: Dict,
         template_dir: AnyStr = "templates",
     ):
@@ -32,10 +34,7 @@ class Stack:
         self.name = name
         self.stack_config = stack_config
         self.template_dir = template_dir
-
-    # def __init__(self, **kwargs):
-    #     self.__dict__.update(kwargs)
-    #     self.stack_name = None
+        self.region = region
 
     @property
     def stack_name(self):
@@ -79,7 +78,25 @@ class Stack:
         Returns the packaged template as a string
         """
         template_path = self.get_template_path()
+
+        # check if bucket exists or create it
+
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+        )
+        try:
+            bucket = s3.create_bucket(
+                Bucket=bucket,
+                CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+            )
+        except botocore.exceptions.ClientError:
+            pass
+
         logger.info("Packaging template %s to %s" % (template_path, bucket))
+        # TODO Check if bucket exists, and create it if necessary
         packaged_template = subprocess.check_output(
             [
                 "aws",
@@ -99,21 +116,22 @@ class Stack:
                 "AWS_SESSION_TOKEN": credentials["SessionToken"],
             },
         )
-        return packaged_template.decode("utf-8")
+        # Run the template through PyYaml, to catch formatting issues from
+        # reading the output of the subprocess call
+        y = yaml.load(packaged_template.decode("utf-8"), Loader=yaml.FullLoader)
+        return yaml.dump(y)
 
-    def create(self, DisableRollback=True, **kwargs):
-        kwargs["StackName"] = self.stack_name
-        account_name = "_root"
-        cf_client = get_boto_client(self.config, "cloudformation", account_name)
-        cf_client.create_stack(**kwargs)
+    def create(self, client, **kwargs):
+        kwargs.update(
+            {
+                "StackName": self.stack_name,
+                "Parameters": self.get_parameters(),
+                "DisableRollback": True,
+                "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
+            }
+        )
+        client.create_stack(**kwargs)
         logger.info("Creating stack %s" % self.stack_name)
-        try:
-            cf_client.get_waiter("stack_create_complete").wait(
-                StackName=self.stack_name,
-                WaiterConfig={"Delay": 20},  # checks the stack status every X seconds
-            )
-        except WaiterError:
-            logger.error("Stack creation failed for %s" % self.stack_name)
 
     def update(self, client, **kwargs):
         kwargs.update(
