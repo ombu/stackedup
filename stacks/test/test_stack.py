@@ -28,18 +28,14 @@ parameters:
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.live_stack_yaml, Loader=yaml.FullLoader),
-            region=config_get_stack_region(
-                self.config, "cluster", "core"
-            ),
+            region=config_get_stack_region(self.config, "cluster", "core"),
             template_dir=self.test_template_path,
         )
         self.new_stack = Stack(
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.new_stack_yaml, Loader=yaml.FullLoader),
-            region=config_get_stack_region(
-                self.config, "cluster", "core"
-            ),
+            region=config_get_stack_region(self.config, "cluster", "core"),
             template_dir=self.test_template_path,
         )
 

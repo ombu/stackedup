@@ -19,4 +19,12 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     install_requires=["boto3==1.10.2", "awscli==1.16.266", "tabulate==0.8.5"],
+    entry_points={
+        "console_scripts": [
+            "assume-role = stacks.commands.assume_role:run",
+            "stack-launch = stacks.commands.stack_launch:run",
+            "stack-update = stacks.commands.stack_update:run",
+            "stack-outputs = stacks.commands.stack_outputs:run",
+        ],
+    },
 )

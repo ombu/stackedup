@@ -9,7 +9,7 @@ def config_load(config_file):
     c = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
     c["instance_list"] = list(c["instances"].keys())
-    logger.info("Found these instances in config.yaml: %s" % c["instance_list"])
+    logger.debug("Found these instances in config.yaml: %s" % c["instance_list"])
     return c
 
 
