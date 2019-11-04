@@ -1,5 +1,6 @@
 import yaml
 import logging
+import boto3
 
 logger = logging.getLogger(__name__)
 
@@ -24,64 +25,15 @@ def config_get_account_name(config, stack_type, name):
 
 def config_get_account_id(config, stack_type, name):
     if stack_type == "account":
-        return None
-        # return config_get_active_account_id()
+        return config_get_active_account_id()
     else:
         account_name = config_get_account_name(config, stack_type, name)
     aws_account_id = config["accounts"][account_name]["id"]
     return aws_account_id
 
 
-def config_get_stack_parameters(config, name, stack_type):
-    parameters = None
-    if stack_type == "account":
-        r = config["accounts"]["_root"]
-        return (
-            {
-                "ParameterKey": "OrganizationalUnitId",
-                "ParameterValue": r["organizatuional_unit_id"],
-            },
-            {
-                "ParameterKey": "OrganizationalRoot",
-                "ParameterValue": r["organizational_root"],
-            },
-            {"ParameterKey": "AccountName", "ParameterValue": name},
-        )
-    else:
-        try:
-            config[_pluralize_component_name(stack_type)][name]["parameters"]
-            stack = config[_pluralize_component_name(stack_type)][name]
-        except KeyError:
-            stack = config["instances"][name][stack_type]
-        # If stack is a dict, the parameters must be in the key 'parameters'
-        if isinstance(stack, dict):
-            parameters = stack["parameters"]
-        # If stack is a string, it's a reference that needs to be resolved
-        elif isinstance(stack, str):
-            parameters = config[_pluralize_component_name(stack_type)][stack][
-                "parameters"
-            ]
-        parameters["EnvironmentType"] = name
-        out = _reformat_parameters(parameters)
-        return out
-
-
-def _reformat_parameters(parameter_dict):
-    items = [
-        {"ParameterKey": k, "ParameterValue": v} for k, v in parameter_dict.items()
-    ]
-    return items
-
-
 def config_get_project_name(config):
     return config["project_name"]
-
-
-def config_get_stack_name(config, name, stack_type):
-    if stack_type in ["account", "cluster"]:
-        return config[_pluralize_component_name(stack_type)][name]["stack_name"]
-    else:
-        return config["instances"][name][stack_type]["stack_name"]
 
 
 def config_get_stack_config(config, stack_type, name):
@@ -102,7 +54,7 @@ def config_get_stack_config(config, stack_type, name):
 def config_get_stack_region(config, stack_type, name):
     """Returns the slice of a project config file that defines a specific stack"""
     if stack_type == "account":
-        exit("Only cluster and instance stack types have regions.")
+        return False
     if stack_type == "cluster":
         return config[_pluralize_component_name(stack_type)][name]["region"]
     else:
@@ -114,5 +66,5 @@ def _pluralize_component_name(name):
     return name + "s"
 
 
-# def config_get_active_account_id():
-#     return get_boto_client("sts").get_caller_identity().get("Account")
+def config_get_active_account_id():
+    return boto3.client("sts").get_caller_identity().get("Account")

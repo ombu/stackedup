@@ -3,10 +3,8 @@ import os
 
 from stacks.config import (
     config_load,
-    config_get_stack_parameters,
     config_get_account_id,
     config_get_project_name,
-    config_get_stack_name,
     config_get_stack_region,
 )
 
@@ -23,32 +21,6 @@ class TestConfig(unittest.TestCase):
 
     def test_config_get_project_name(self):
         self.assertEqual(config_get_project_name(self.config), "stacks")
-
-    def test_resolved_parameters(self):
-        resolved_parameters = config_get_stack_parameters(
-            self.config, "testing1", "cluster"
-        )
-        self.assertIsInstance(resolved_parameters, list)
-        self.assertTrue(resolved_parameters[0]["ParameterKey"])
-
-    def test_direct_parameters(self):
-        direct_parameters = config_get_stack_parameters(
-            self.config, "testing1", "application"
-        )
-        self.assertIsInstance(direct_parameters, list)
-        self.assertTrue(direct_parameters[0]["ParameterKey"])
-
-    def test_get_stack_name_instance(self):
-        name = "testing1"
-        component = "application"
-        stack_name = config_get_stack_name(self.config, name, component)
-        self.assertEqual(stack_name, "stacks-application-testing1")
-
-    def test_get_stack_name_cluster(self):
-        name = "core"
-        component = "cluster"
-        stack_name = config_get_stack_name(self.config, name, component)
-        self.assertEqual(stack_name, "stacks-cluster-core")
 
     def test_get_cluster_region(self):
         region = config_get_stack_region(self.config, "cluster", "core")

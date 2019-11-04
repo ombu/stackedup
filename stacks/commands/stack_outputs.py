@@ -28,7 +28,11 @@ class OutputsCommand(StackCommand):
         )
 
     def run(self):
-        client = get_boto_client("cloudformation", self.config, self.stack.account_name)
+        if self.args.stack_type == "account":
+            account_name = "_root"
+        else:
+            account_name = self.stack.account_name
+        client = get_boto_client("cloudformation", self.config, account_name)
         outputs = self.stack.get_outputs(client)
         print(Stack.tabulate_outputs(outputs))
 

@@ -33,14 +33,18 @@ class UpdateCommand(StackCommand):
         )
 
     def run(self):
-        credentials = get_boto_credentials(self.config, self.stack.account_name)
+        if self.args.stack_type == "account":
+            account_name = "_root"
+        else:
+            account_name = self.stack.account_name
+        credentials = get_boto_credentials(self.config, account_name)
         project_name = config_get_project_name(self.config)
         account_id = config_get_account_id(
             self.config, self.args.stack_type, self.args.name
         )
         bucket = f"cloudformation-{project_name}-{account_id}"
         template_body = self.stack.package_template(credentials, bucket)
-        client = get_boto_client("cloudformation", self.config, self.stack.account_name)
+        client = get_boto_client("cloudformation", self.config, account_name)
         self.stack.update(client, TemplateBody=template_body)
 
 

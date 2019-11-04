@@ -49,7 +49,10 @@ class Stack:
 
     @property
     def account_name(self):
-        return self.stack_config["account"]
+        if self.type == "account":
+            return self.name
+        else:
+            return self.stack_config["account"]
 
     def get_template_path(self):
         return os.path.join(os.path.realpath(self.template_dir), "%s.yaml" % self.type,)
@@ -64,7 +67,8 @@ class Stack:
 
     def get_parameters(self):
         parameters = self.stack_config["parameters"]
-        parameters["EnvironmentType"] = self.name
+        if self.type != "account":
+            parameters["EnvironmentType"] = self.name
         formatted_parameters = [
             {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
         ]
@@ -130,6 +134,7 @@ class Stack:
                 "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
             }
         )
+        print(self.stack_name)
         client.create_stack(**kwargs)
         logger.info("Creating stack %s" % self.stack_name)
 
