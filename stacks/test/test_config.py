@@ -12,7 +12,8 @@ from stacks.config import (
 class TestConfig(unittest.TestCase):
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        self.config = config_load(os.path.join(path, "test_config.yaml"))
+        with open(os.path.join(path, "test_config.yaml")) as config_file:
+            self.config = config_load(config_file)
 
     def test_config_get_account_id(self):
         self.assertEqual(

@@ -9,7 +9,8 @@ from stacks.config import config_load, config_get_stack_region
 class TestStack(unittest.TestCase):
     def setUp(self):
         path = os.path.dirname(os.path.abspath(__file__))
-        self.config = config_load(os.path.join(path, "test_config.yaml"))
+        with open(os.path.join(path, "test_config.yaml")) as config_file:
+            self.config = config_load(config_file)
         self.live_stack_yaml = """
 account: aws_account_for_the_stack
 parameters:

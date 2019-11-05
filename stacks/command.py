@@ -8,32 +8,37 @@ logger = logging.getLogger(__name__)
 
 class BaseCommand:
     def __init__(self, *args):
-        self.config = config_load(args[0])
+        self._args = None
         self.argparser = argparse.ArgumentParser()
+        self.argparser.add_argument(
+            "--config", type=argparse.FileType("r"), default="config.yaml"
+        )
+        self.add_arguments()
+        self.config = config_load(self.args.config)
 
     @property
     def args(self):
-        try:
+        if self._args:
             return self._args
-        except AttributeError:
+        else:
             self._args = self.argparser.parse_args()
             return self._args
 
+    def add_arguments(self):
+        pass
+
     def run(self):
-        def run(self):
-            pass
+        pass
 
 
 class StackCommand(BaseCommand):
     def __init__(self, *args):
         super().__init__(*args)
+
+    def add_arguments(self):
+        self.argparser.add_argument("stack_type", type=str)
         self.argparser.add_argument(
-            "stack_type", type=str, choices=self.config["stack_types"]
-        )
-        self.argparser.add_argument(
-            # TODO: This argument needs validation
-            "name",
-            type=str,  # , choices=self.config["instance_list"]
+            "name", type=str,
         )
 
     def run(self):
@@ -48,9 +53,8 @@ class AccountCommand(BaseCommand):
         )
         self._args = self.argparser.parse_args()
 
-
-def run(self):
-    super().run()
+    def run(self):
+        super().run()
 
 
 def get_boto_client(client_type, config, account_name):

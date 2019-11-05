@@ -17,8 +17,8 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
 
 class LaunchCommand(StackCommand):
-    def __init__(self, config_file):
-        super().__init__(config_file)
+    def __init__(self):
+        super().__init__()
         stack_config = config_get_stack_config(
             self.config, self.args.stack_type, self.args.name
         )
@@ -45,5 +45,5 @@ class LaunchCommand(StackCommand):
 
 
 def run():
-    cmd = LaunchCommand("config.yaml")
+    cmd = LaunchCommand()
     cmd.run()

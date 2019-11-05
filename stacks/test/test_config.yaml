@@ -10,6 +10,7 @@ stack_types:
 accounts:
   test_aws_account1:
     id: "637300000123"
+    provisioner_role_arn: arn:aws:iam::123456789012:role/S3Access
 
 clusters:
   core:
