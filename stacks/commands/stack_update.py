@@ -1,9 +1,9 @@
 import logging
 from stacks.config import (
-    config_get_project_name,
-    config_get_account_id,
     config_get_stack_config,
     config_get_stack_region,
+    config_get_project_name,
+    config_get_account_id,
 )
 from stacks.stack import Stack
 from stacks.command import (
