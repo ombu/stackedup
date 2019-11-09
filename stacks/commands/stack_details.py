@@ -34,8 +34,11 @@ class OutputsCommand(StackCommand):
         else:
             account_name = self.stack.account_name
         client = get_boto_client("cloudformation", self.config, account_name)
-        outputs = self.stack.get_outputs(client)
-        print(Stack.tabulate_outputs(outputs))
+        details = self.stack.get_details(client)
+        print(f"Stack Name: {self.stack.stack_name}")
+        print(f"Status: {details['StackStatus']}")
+        print(Stack.tabulate_results(details["Parameters"]))
+        print(Stack.tabulate_results(details["Outputs"]))
 
 
 def run():

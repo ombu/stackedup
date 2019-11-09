@@ -149,12 +149,12 @@ class Stack:
         client.update_stack(**kwargs)
         logger.info("Updating stack %s" % kwargs["StackName"])
 
-    def get_outputs(self, client):
+    def get_details(self, client):
         response = client.describe_stacks(StackName=self.stack_name)
-        return response["Stacks"][0]["Outputs"]
+        return response["Stacks"][0]
 
     @staticmethod
-    def tabulate_outputs(outputs):
+    def tabulate_results(outputs):
         for d in outputs:
             try:
                 del d["Description"]

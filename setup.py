@@ -24,7 +24,7 @@ setuptools.setup(
             "assume-role = stacks.commands.assume_role:run",
             "stack-launch = stacks.commands.stack_launch:run",
             "stack-update = stacks.commands.stack_update:run",
-            "stack-outputs = stacks.commands.stack_outputs:run",
+            "stack-details = stacks.commands.stack_details:run",
         ],
     },
 )
