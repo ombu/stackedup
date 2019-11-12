@@ -48,10 +48,9 @@ class StackCommand(BaseCommand):
 class AccountCommand(BaseCommand):
     def __init__(self, *args):
         super().__init__(*args)
-        self.argparser.add_argument(
-            "account_name", type=str, choices=list(self.config["accounts"].keys())
-        )
-        self._args = self.argparser.parse_args()
+
+    def add_arguments(self):
+        self.argparser.add_argument("account_name", type=str)
 
     def run(self):
         super().run()
