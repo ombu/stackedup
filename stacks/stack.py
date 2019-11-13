@@ -67,8 +67,6 @@ class Stack:
 
     def get_parameters(self):
         parameters = self.stack_config["parameters"]
-        if self.type != "account":
-            parameters["EnvironmentType"] = self.name
         formatted_parameters = [
             {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
         ]
