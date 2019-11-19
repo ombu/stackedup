@@ -4,6 +4,7 @@ from stacks.config import (
     config_get_stack_region,
     config_get_project_name,
     config_get_account_id,
+    config_get_role,
 )
 from stacks.stack import Stack
 from stacks.command import (
@@ -37,7 +38,8 @@ class UpdateCommand(StackCommand):
             account_name = "_root"
         else:
             account_name = self.stack.account_name
-        credentials = get_boto_credentials(self.config, account_name)
+        role_arn = config_get_role(self.config, account_name)
+        credentials = get_boto_credentials(role_arn, account_name)
         project_name = config_get_project_name(self.config)
         account_id = config_get_account_id(
             self.config, self.args.stack_type, self.args.name

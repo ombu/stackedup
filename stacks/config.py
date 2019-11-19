@@ -60,6 +60,10 @@ def config_get_stack_region(config, stack_type, name):
         return config["clusters"][cluster]["region"]
 
 
+def config_get_role(config, account):
+    return config["accounts"][account]["provisioner_role_arn"]
+
+
 def _pluralize_component_name(name):
     return name + "s"
 

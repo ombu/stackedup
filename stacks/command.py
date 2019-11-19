@@ -1,7 +1,9 @@
 import argparse
 import logging
+from functools import lru_cache
+
 import boto3
-from stacks.config import config_load
+from stacks.config import config_load, config_get_role
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,8 @@ class AccountCommand(BaseCommand):
 
 
 def get_boto_client(client_type, config, account_name):
-    credentials = get_boto_credentials(config, account_name)
+    role_arn = config_get_role(config, account_name)
+    credentials = get_boto_credentials(role_arn, account_name)
     return boto3.client(
         client_type,
         aws_access_key_id=credentials["AccessKeyId"],
@@ -66,8 +69,8 @@ def get_boto_client(client_type, config, account_name):
     )
 
 
-def get_boto_credentials(config, account_name):
-    role_arn = config["accounts"][account_name]["provisioner_role_arn"]
+@lru_cache(maxsize=10)
+def get_boto_credentials(role_arn, account_name):
     response = boto3.client("sts").assume_role(
         RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
     )
