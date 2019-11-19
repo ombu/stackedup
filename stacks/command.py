@@ -73,3 +73,18 @@ def get_boto_credentials(config, account_name):
     )
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]
+
+
+class InstanceCommand(BaseCommand):
+    """
+    A command that operates on instances
+    """
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    def add_arguments(self):
+        self.argparser.add_argument("name", type=str)
+
+    def run(self):
+        super().run()

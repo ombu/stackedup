@@ -6,3 +6,8 @@ CloudFormation.
 Running tests:
 
     python -m unittest discover 
+
+Packaged and distribute
+
+    python setup.py sdist bdist_wheel
+    python -m twine upload dist/*

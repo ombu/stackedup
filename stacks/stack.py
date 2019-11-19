@@ -65,12 +65,15 @@ class Stack:
         logger.info("Loaded template %s" % template_path)
         return template
 
-    def get_parameters(self):
+    def get_parameters(self, formatting="json"):
         parameters = self.stack_config["parameters"]
-        formatted_parameters = [
-            {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
-        ]
-        return formatted_parameters
+        if formatting == "json":
+            return parameters
+        if formatting == "cloudformation":
+            formatted_parameters = [
+                {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
+            ]
+            return formatted_parameters
 
     def package_template(self, credentials, bucket):
         """
@@ -127,7 +130,7 @@ class Stack:
         kwargs.update(
             {
                 "StackName": self.stack_name,
-                "Parameters": self.get_parameters(),
+                "Parameters": self.get_parameters(formatting="cloudformation"),
                 "DisableRollback": True,
                 "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
             }
@@ -140,7 +143,7 @@ class Stack:
         kwargs.update(
             {
                 "StackName": self.stack_name,
-                "Parameters": self.get_parameters(),
+                "Parameters": self.get_parameters(formatting="cloudformation"),
                 "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
             }
         )
