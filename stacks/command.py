@@ -58,8 +58,8 @@ class AccountCommand(BaseCommand):
         super().run()
 
 
-def get_boto_client(client_type, config, account_name):
-    role_arn = config_get_role(config, account_name)
+@lru_cache(maxsize=10)
+def get_boto_client(client_type, role_arn, account_name, region_name):
     credentials = get_boto_credentials(role_arn, account_name)
     return boto3.client(
         client_type,
