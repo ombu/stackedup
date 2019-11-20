@@ -43,7 +43,10 @@ class LaunchCommand(StackCommand):
         )
         bucket = f"cloudformation-{project_name}-{account_id}"
         template_body = self.stack.package_template(credentials, bucket)
-        client = get_boto_client("cloudformation", self.config, account_name)
+        region_name = config_get_stack_region(
+            self.config, self.args.stack_type, self.args.name
+        )
+        client = get_boto_client("cloudformation", role_arn, account_name, region_name)
         self.stack.create(client, TemplateBody=template_body)
 
 

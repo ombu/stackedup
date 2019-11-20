@@ -3,7 +3,7 @@ import logging
 from functools import lru_cache
 
 import boto3
-from stacks.config import config_load, config_get_role
+from stacks.config import config_load
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,7 @@ def get_boto_client(client_type, config, account_name):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+        region_name=region_name,
     )
 
 
