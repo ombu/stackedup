@@ -75,7 +75,7 @@ class Stack:
             ]
             return formatted_parameters
 
-    def package_template(self, credentials, bucket):
+    def package_template(self, credentials, bucket, region_name):
         """
         boto3 does not support the Cloudformation package command, so we have to
         depends on the aws cli and make a subprocess call
@@ -95,7 +95,7 @@ class Stack:
         try:
             bucket = s3.create_bucket(
                 Bucket=bucket,
-                CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+                CreateBucketConfiguration={"LocationConstraint": region_name},
             )
         except botocore.exceptions.ClientError:
             pass
@@ -113,6 +113,8 @@ class Stack:
                 bucket,
                 "--s3-prefix",
                 self.name,
+                "--region",
+                region_name
             ],
             env={
                 **os.environ,

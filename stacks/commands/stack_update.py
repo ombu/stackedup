@@ -45,10 +45,10 @@ class UpdateCommand(StackCommand):
             self.config, self.args.stack_type, self.args.name
         )
         bucket = f"cloudformation-{project_name}-{account_id}"
-        template_body = self.stack.package_template(credentials, bucket)
         region_name = config_get_stack_region(
             self.config, self.stack.type, self.stack.name
         )
+        template_body = self.stack.package_template(credentials, bucket, region_name)
         client = get_boto_client("cloudformation", role_arn, account_name, region_name)
         self.stack.update(client, TemplateBody=template_body)
 
