@@ -114,7 +114,7 @@ class Stack:
                 "--s3-prefix",
                 self.name,
                 "--region",
-                region_name
+                region_name,
             ],
             env={
                 **os.environ,
