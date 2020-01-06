@@ -21,7 +21,7 @@ class TestConfig(unittest.TestCase):
         )
 
     def test_config_get_project_name(self):
-        self.assertEqual(config_get_project_name(self.config), "stacks")
+        self.assertEqual(config_get_project_name(self.config), "tests")
 
     def test_get_cluster_region(self):
         region = config_get_stack_region(self.config, "cluster", "core")

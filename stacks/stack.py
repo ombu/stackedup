@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class Stack:
     def __init__(
         self,
+        project_name: AnyStr,
         stack_type: AnyStr,
         name: AnyStr,
         region: AnyStr,
@@ -31,6 +32,7 @@ class Stack:
             stack_name: the_stack_name
         """
         self.type = stack_type
+        self.project_name = project_name
         self.name = name
         self.stack_config = stack_config
         self.template_dir = template_dir
@@ -43,7 +45,7 @@ class Stack:
         except KeyError:
             # Create a stack name
             date = f"{datetime.datetime.now():%Y%m%d%H%M}"
-            stack_name = "-".join((self.type, self.name, date))
+            stack_name = "-".join((self.project_name, self.type, self.name, date))
             logger.info("Setting stack name to %s" % stack_name)
             return stack_name
 

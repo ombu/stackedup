@@ -1,4 +1,4 @@
-project_name: stacks
+project_name: tests
 
 stack_types:
   - account

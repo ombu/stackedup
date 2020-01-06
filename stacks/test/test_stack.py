@@ -26,6 +26,7 @@ parameters:
             os.path.realpath(os.path.dirname(__file__)), "templates"
         )
         self.live_stack = Stack(
+            project_name="tests",
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.live_stack_yaml, Loader=yaml.FullLoader),
@@ -33,6 +34,7 @@ parameters:
             template_dir=self.test_template_path,
         )
         self.new_stack = Stack(
+            project_name="tests",
             stack_type="cluster",
             name="core",
             stack_config=yaml.load(self.new_stack_yaml, Loader=yaml.FullLoader),
@@ -43,7 +45,7 @@ parameters:
     def test_stack_name_property(self):
         self.assertEqual("the_stack_name", self.live_stack.stack_name)
         date = f"{datetime.datetime.now():%Y%m%d%H%M}"
-        self.assertEqual("cluster-core-%s" % date, self.new_stack.stack_name)
+        self.assertEqual("tests-cluster-core-%s" % date, self.new_stack.stack_name)
 
     def test_get_template_path(self):
         template_file = os.path.join(self.test_template_path, "cluster.yaml")

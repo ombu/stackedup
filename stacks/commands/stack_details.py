@@ -21,6 +21,7 @@ class OutputsCommand(StackCommand):
             self.config, self.args.stack_type, self.args.name
         )
         self.stack = Stack(
+            project_name=self.project_name,
             stack_type=self.args.stack_type,
             name=self.args.name,
             stack_config=stack_config,

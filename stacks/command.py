@@ -3,7 +3,7 @@ import logging
 from functools import lru_cache
 
 import boto3
-from stacks.config import config_load
+from stacks.config import config_load, config_get_project_name
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,7 @@ class BaseCommand:
         )
         self.add_arguments()
         self.config = config_load(self.args.config)
+        self.project_name = config_get_project_name(self.config)
 
     @property
     def args(self):

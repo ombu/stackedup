@@ -2,7 +2,6 @@ import logging
 from stacks.config import (
     config_get_stack_config,
     config_get_stack_region,
-    config_get_project_name,
     config_get_account_id,
     config_get_role,
 )
@@ -24,6 +23,7 @@ class LaunchCommand(StackCommand):
             self.config, self.args.stack_type, self.args.name
         )
         self.stack = Stack(
+            project_name=self.project_name,
             stack_type=self.args.stack_type,
             name=self.args.name,
             stack_config=stack_config,
@@ -37,11 +37,10 @@ class LaunchCommand(StackCommand):
         account_name = self.stack.account_name
         role_arn = config_get_role(self.config, account_name)
         credentials = get_boto_credentials(role_arn, account_name)
-        project_name = config_get_project_name(self.config)
         account_id = config_get_account_id(
             self.config, self.args.stack_type, self.args.name
         )
-        bucket = f"cloudformation-{project_name}-{account_id}"
+        bucket = f"cloudformation-{self.project_name}-{account_id}"
         region_name = config_get_stack_region(
             self.config, self.args.stack_type, self.args.name
         )
