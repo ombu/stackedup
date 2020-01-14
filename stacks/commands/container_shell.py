@@ -26,6 +26,7 @@ class ContainerShellCommand(InstanceCommand):
             self.config, stack_type, self.args.name
         )
         self.stack = Stack(
+            project_name=self.project_name,
             stack_type=stack_type,
             name=self.args.name,
             stack_config=stack_config_instance,
@@ -37,6 +38,7 @@ class ContainerShellCommand(InstanceCommand):
             self.config, "cluster", cluster_name
         )
         self.cluster_stack = Stack(
+            project_name=self.project_name,
             stack_type="cluster",
             name=cluster_name,
             stack_config=stack_config_cluster,
