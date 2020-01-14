@@ -118,7 +118,7 @@ class ContainerShellCommand(InstanceCommand):
 
         ssh_command = (
             f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} "
-            f"docker exec -it {container_id} bash"
+            f"docker exec -it {container_id} sh"
         )
         print(ssh_command)
 
