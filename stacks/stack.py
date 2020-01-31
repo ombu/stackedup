@@ -95,12 +95,9 @@ class Stack:
             aws_session_token=credentials["SessionToken"],
         )
         try:
-            bucket = s3.create_bucket(
-                Bucket=bucket,
-                CreateBucketConfiguration={"LocationConstraint": region_name},
-            )
+            s3.head_bucket(Bucket=bucket)
         except botocore.exceptions.ClientError:
-            pass
+            print(f'Bucket not available {bucket}')
 
         logger.info("Packaging template %s to %s" % (template_path, bucket))
         # TODO Check if bucket exists, and create it if necessary

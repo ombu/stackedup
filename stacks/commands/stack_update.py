@@ -4,6 +4,7 @@ from stacks.config import (
     config_get_stack_region,
     config_get_account_id,
     config_get_role,
+    config_get_cloudformation_bucket,
 )
 from stacks.stack import Stack
 from stacks.command import (
@@ -43,7 +44,7 @@ class UpdateCommand(StackCommand):
         account_id = config_get_account_id(
             self.config, self.args.stack_type, self.args.name
         )
-        bucket = f"cloudformation-{self.project_name}-{account_id}"
+        bucket = config_get_cloudformation_bucket(self.config, account_name)
         region_name = config_get_stack_region(
             self.config, self.stack.type, self.stack.name
         )

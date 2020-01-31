@@ -70,3 +70,7 @@ def _pluralize_component_name(name):
 
 def config_get_active_account_id():
     return boto3.client("sts").get_caller_identity().get("Account")
+
+
+def config_get_cloudformation_bucket(config, account):
+    return config["accounts"][account]["cloudformation_bucket"]

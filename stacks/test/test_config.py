@@ -6,6 +6,7 @@ from stacks.config import (
     config_get_account_id,
     config_get_project_name,
     config_get_stack_region,
+    config_get_cloudformation_bucket,
 )
 
 
@@ -30,6 +31,10 @@ class TestConfig(unittest.TestCase):
     def test_get_instance_region(self):
         region = config_get_stack_region(self.config, "application", "testing1")
         self.assertEqual("us-east-1", region)
+
+    def test_get_cloudformation_bucket(self):
+        bucket_name = config_get_cloudformation_bucket(self.config, "test_aws_account1" )
+        self.assertEqual("my_s3_bucket_name", bucket_name)
 
 
 if __name__ == "__main__":

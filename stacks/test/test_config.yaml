@@ -11,6 +11,7 @@ accounts:
   test_aws_account1:
     id: "637300000123"
     provisioner_role_arn: arn:aws:iam::123456789012:role/S3Access
+    cloudformation_bucket: my_s3_bucket_name
 
 clusters:
   core:
