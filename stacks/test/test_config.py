@@ -33,7 +33,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual("us-east-1", region)
 
     def test_get_cloudformation_bucket(self):
-        bucket_name = config_get_cloudformation_bucket(self.config, "test_aws_account1" )
+        bucket_name = config_get_cloudformation_bucket(self.config, "test_aws_account1")
         self.assertEqual("my_s3_bucket_name", bucket_name)
 
 

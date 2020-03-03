@@ -97,7 +97,7 @@ class Stack:
         try:
             s3.head_bucket(Bucket=bucket)
         except botocore.exceptions.ClientError:
-            print(f'Bucket not available {bucket}')
+            print(f"Bucket not available {bucket}")
 
         logger.info("Packaging template %s to %s" % (template_path, bucket))
         # TODO Check if bucket exists, and create it if necessary
