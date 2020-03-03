@@ -52,7 +52,9 @@ def config_get_stack_config(config, stack_type, name):
 def config_get_stack_region(config, stack_type, name):
     """Returns the slice of a project config file that defines a specific stack"""
     if stack_type == "account":
-        return False
+        # The region for the account is irrelevant because accounts are global, but
+        # `stackedup` functions require one
+        return "us-west-2"
     if stack_type == "cluster":
         return config[_pluralize_component_name(stack_type)][name]["region"]
     else:

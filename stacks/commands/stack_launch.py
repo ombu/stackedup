@@ -35,7 +35,10 @@ class LaunchCommand(StackCommand):
         )
 
     def run(self):
-        account_name = self.stack.account_name
+        if self.args.stack_type == "account":
+            account_name = "_root"
+        else:
+            account_name = self.stack.account_name
         role_arn = config_get_role(self.config, account_name)
         credentials = get_boto_credentials(role_arn, account_name)
         account_id = config_get_account_id(
