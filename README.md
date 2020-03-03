@@ -3,11 +3,17 @@
 Tools to help launch and manage micro-service based applications in AWS using
 CloudFormation.
 
-Running tests:
+## Running tests
 
-    python -m unittest discover 
+```console
+python -m unittest discover
+```
 
-Packaged and distribute
+## Packaged and distribute
 
-    python setup.py sdist bdist_wheel
-    python -m twine upload dist/stackedup-<tag>*
+Edit `setup.py` with the desired target version. Then:
+
+```console
+python setup.py sdist bdist_wheel
+python -m twine upload dist/stackedup-<tag>*
+```
