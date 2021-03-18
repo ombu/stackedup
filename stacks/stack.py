@@ -22,14 +22,14 @@ class Stack:
         template_dir: AnyStr = "templates",
     ):
         """
-          :param stack_config: Dict
-          A dictionary of the stack configuration like:
+        :param stack_config: Dict
+        A dictionary of the stack configuration like:
 
-            account: aws_account_for_the_stack
-            parameters:
-              Parameter1: my_key
-              Parameter2: t3.small
-            stack_name: the_stack_name
+          account: aws_account_for_the_stack
+          parameters:
+            Parameter1: my_key
+            Parameter2: t3.small
+          stack_name: the_stack_name
         """
         self.type = stack_type
         self.project_name = project_name
@@ -57,7 +57,10 @@ class Stack:
             return self.stack_config["account"]
 
     def get_template_path(self):
-        return os.path.join(os.path.realpath(self.template_dir), "%s.yaml" % self.type,)
+        return os.path.join(
+            os.path.realpath(self.template_dir),
+            "%s.yaml" % self.type,
+        )
 
     def get_template_body(self):
         template_path = self.get_template_path()
@@ -154,6 +157,16 @@ class Stack:
     def get_details(self, client):
         response = client.describe_stacks(StackName=self.stack_name)
         return response["Stacks"][0]
+
+    def get_outputs(self, client):
+        response = client.describe_stacks(StackName=self.stack_name)
+        return response["Stacks"][0]["Outputs"]
+
+    def get_output(self, client, output_key):
+        response = client.describe_stacks(StackName=self.stack_name)
+        outputs = response["Stacks"][0]["Outputs"]
+        v = [i["OutputValue"] for i in outputs if i["OutputKey"] == output_key]
+        return v[0]
 
     @staticmethod
     def tabulate_results(outputs):

@@ -68,7 +68,7 @@ class ContainerShellCommand(InstanceCommand):
             "cloudformation", role_arn, account_name, region_name
         )
         stack_details = self.stack.get_details(cf_client)
-        cluster_name = self.stack.get_parameters()["ClusterStack"]
+        cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
         service_name = None
         try:
@@ -86,7 +86,8 @@ class ContainerShellCommand(InstanceCommand):
         # Get the task id from list_tasks
         ecs_client = get_boto_client("ecs", role_arn, account_name, region_name)
         response = ecs_client.list_tasks(
-            cluster=cluster_name, serviceName=service_name,
+            cluster=cluster_name,
+            serviceName=service_name,
         )
         task_id = response["taskArns"][0]
 
