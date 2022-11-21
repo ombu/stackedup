@@ -23,7 +23,7 @@ class ContainerShellCommand(InstanceCommand):
         super().__init__()
         stack_type = "application"
         stack_config_instance = config_get_stack_config(
-            self.config, stack_type, self.args.name
+            self.config, self.args.service, self.args.name
         )
         self.stack = Stack(
             project_name=self.project_name,
