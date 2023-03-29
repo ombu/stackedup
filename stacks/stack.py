@@ -47,7 +47,7 @@ class Stack:
             # Create a stack name
             date = f"{datetime.datetime.now():%Y%m%d%H%M}"
             stack_name = "-".join((self.project_name, self.type, self.name, date))
-            logger.info("Setting stack name to %s" % stack_name)
+            logger.info(f"Setting stack name to {stack_name}")
             return stack_name
 
     @property
@@ -60,15 +60,15 @@ class Stack:
     def get_template_path(self):
         return os.path.join(
                 os.path.realpath(self.template_dir),
-                "%s.yaml" % self.type,
+                f"{self.type}.yaml",
         )
 
+    @property
     def get_template_body(self):
         template_path = self.get_template_path()
-        file = open(template_path, "r")
-        template = file.read()
-        file.close()
-        logger.info("Loaded template %s" % template_path)
+        with open(template_path, "r") as f:
+            template = f.read()
+        logger.info(f"Loaded template {template_path}")
         return template
 
     def get_parameters(self, formatting="json"):
@@ -103,7 +103,7 @@ class Stack:
         except botocore.exceptions.ClientError:
             print(f"Bucket not available {bucket}")
 
-        logger.info("Packaging template %s to %s" % (template_path, bucket))
+        logger.info(f"Packaging template {template_path} to {bucket}")
         # TODO Check if bucket exists, and create it if necessary
         packaged_template = subprocess.check_output(
                 [
@@ -142,7 +142,7 @@ class Stack:
         )
         print(self.stack_name)
         client.create_stack(**kwargs)
-        logger.info("Creating stack %s" % self.stack_name)
+        logger.info(f"Creating stack {self.stack_name}")
 
     def update(self, client, **kwargs):
         kwargs.update(
@@ -153,7 +153,7 @@ class Stack:
                 }
         )
         client.update_stack(**kwargs)
-        logger.info("Updating stack %s" % kwargs["StackName"])
+        logger.info(f"Updating stack {kwargs['StackName']}")
 
     def get_details(self, client):
         response = client.describe_stacks(StackName=self.stack_name)

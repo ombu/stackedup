@@ -47,7 +47,7 @@ parameters:
     def test_stack_name_property(self):
         self.assertEqual("the_stack_name", self.live_stack.stack_name)
         date = f"{datetime.datetime.now():%Y%m%d%H%M}"
-        self.assertEqual("tests-cluster-core-%s" % date, self.new_stack.stack_name)
+        self.assertEqual(f"tests-cluster-core-{date}", self.new_stack.stack_name)
 
     def test_get_template_path(self):
         template_file = os.path.join(self.test_template_path, "cluster.yaml")
@@ -56,10 +56,9 @@ parameters:
 
     def test_get_template_body(self):
         template_file = os.path.join(self.test_template_path, "cluster.yaml")
-        f = open(template_file, "r")
-        template_body = f.read()
-        f.close()
-        self.assertEqual(template_body, self.new_stack.get_template_body())
+        with open(template_file, "r") as f:
+            template_body = f.read()
+        self.assertEqual(template_body, self.new_stack.get_template_body)
 
 
 if __name__ == "__main__":

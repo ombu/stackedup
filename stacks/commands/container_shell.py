@@ -61,7 +61,6 @@ class ContainerShellCommand(InstanceCommand):
         stack_details = self.stack.get_details(cf_client)
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
-        service_name = None
         try:
             service_name = [
                 d["OutputValue"]
