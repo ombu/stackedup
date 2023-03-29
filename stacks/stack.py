@@ -2,24 +2,25 @@ import datetime
 import logging
 import os
 import subprocess
+from typing import AnyStr, Dict
+
 import boto3
 import botocore.exceptions
-from tabulate import tabulate
-from typing import AnyStr, Dict
 import yaml
+from tabulate import tabulate
 
 logger = logging.getLogger(__name__)
 
 
 class Stack:
     def __init__(
-        self,
-        project_name: AnyStr,
-        stack_type: AnyStr,
-        name: AnyStr,
-        region: AnyStr,
-        stack_config: Dict,
-        template_dir: AnyStr = "templates",
+            self,
+            project_name: AnyStr,
+            stack_type: AnyStr,
+            name: AnyStr,
+            region: AnyStr,
+            stack_config: Dict,
+            template_dir: AnyStr = "templates",
     ):
         """
         :param stack_config: Dict
@@ -58,8 +59,8 @@ class Stack:
 
     def get_template_path(self):
         return os.path.join(
-            os.path.realpath(self.template_dir),
-            "%s.yaml" % self.type,
+                os.path.realpath(self.template_dir),
+                "%s.yaml" % self.type,
         )
 
     def get_template_body(self):
@@ -92,10 +93,10 @@ class Stack:
         # check if bucket exists or create it
 
         s3 = boto3.client(
-            "s3",
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
+                "s3",
+                aws_access_key_id=credentials["AccessKeyId"],
+                aws_secret_access_key=credentials["SecretAccessKey"],
+                aws_session_token=credentials["SessionToken"],
         )
         try:
             s3.head_bucket(Bucket=bucket)
@@ -105,25 +106,25 @@ class Stack:
         logger.info("Packaging template %s to %s" % (template_path, bucket))
         # TODO Check if bucket exists, and create it if necessary
         packaged_template = subprocess.check_output(
-            [
-                "aws",
-                "cloudformation",
-                "package",
-                "--template-file",
-                template_path,
-                "--s3-bucket",
-                bucket,
-                "--s3-prefix",
-                self.name,
-                "--region",
-                region_name,
-            ],
-            env={
-                **os.environ,
-                "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
-                "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
-                "AWS_SESSION_TOKEN": credentials["SessionToken"],
-            },
+                [
+                    "aws",
+                    "cloudformation",
+                    "package",
+                    "--template-file",
+                    template_path,
+                    "--s3-bucket",
+                    bucket,
+                    "--s3-prefix",
+                    self.name,
+                    "--region",
+                    region_name,
+                ],
+                env={
+                    **os.environ,
+                    "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
+                    "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
+                    "AWS_SESSION_TOKEN": credentials["SessionToken"],
+                },
         )
         # Run the template through PyYaml, to catch formatting issues from
         # reading the output of the subprocess call
@@ -132,12 +133,12 @@ class Stack:
 
     def create(self, client, **kwargs):
         kwargs.update(
-            {
-                "StackName": self.stack_name,
-                "Parameters": self.get_parameters(formatting="cloudformation"),
-                "DisableRollback": True,
-                "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
-            }
+                {
+                    "StackName": self.stack_name,
+                    "Parameters": self.get_parameters(formatting="cloudformation"),
+                    "DisableRollback": True,
+                    "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
+                }
         )
         print(self.stack_name)
         client.create_stack(**kwargs)
@@ -145,11 +146,11 @@ class Stack:
 
     def update(self, client, **kwargs):
         kwargs.update(
-            {
-                "StackName": self.stack_name,
-                "Parameters": self.get_parameters(formatting="cloudformation"),
-                "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
-            }
+                {
+                    "StackName": self.stack_name,
+                    "Parameters": self.get_parameters(formatting="cloudformation"),
+                    "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
+                }
         )
         client.update_stack(**kwargs)
         logger.info("Updating stack %s" % kwargs["StackName"])

@@ -1,6 +1,7 @@
-import yaml
 import logging
+
 import boto3
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ def config_get_stack_config(config, stack_type, name):
         # The stack is a service withing an instance, so import the account and
         # cluster from the instance
         stack_config.update(
-            {"account": instance["account"], "cluster": instance["cluster"],}
+                {"account": instance["account"], "cluster": instance["cluster"], }
         )
         return stack_config
 
