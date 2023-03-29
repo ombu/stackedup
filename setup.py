@@ -18,7 +18,7 @@ setuptools.setup(
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
         ],
-        python_requires=">=3.8",
+        python_requires=">=3.9",
         install_requires=["boto3==1.26.101", "awscli==1.27.101", "tabulate==0.9.0"],
         entry_points={
             "console_scripts": [
