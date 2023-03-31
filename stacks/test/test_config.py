@@ -1,13 +1,8 @@
-import unittest
 import os
+import unittest
 
-from stacks.config import (
-    config_load,
-    config_get_account_id,
-    config_get_project_name,
-    config_get_stack_region,
-    config_get_cloudformation_bucket,
-)
+from stacks.config import config_get_account_id, config_get_cloudformation_bucket, config_get_project_name, \
+    config_get_stack_region, config_load
 
 
 class TestConfig(unittest.TestCase):
@@ -18,7 +13,7 @@ class TestConfig(unittest.TestCase):
 
     def test_config_get_account_id(self):
         self.assertEqual(
-            config_get_account_id(self.config, "instance", "testing1"), "637300000123"
+                config_get_account_id(self.config, "instance", "testing1"), "637300000123"
         )
 
     def test_config_get_project_name(self):

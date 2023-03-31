@@ -1,14 +1,7 @@
 import logging
-from stacks.config import (
-    config_get_stack_config,
-    config_get_stack_region,
-    config_get_role,
-)
+from stacks.config import config_get_stack_config, config_get_stack_region, config_get_role
 from stacks.stack import Stack
-from stacks.command import (
-    StackCommand,
-    get_boto_client,
-)
+from stacks.command import StackCommand, get_boto_client
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")

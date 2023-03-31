@@ -3,7 +3,8 @@ import logging
 from functools import lru_cache
 
 import boto3
-from stacks.config import config_load, config_get_project_name
+
+from stacks.config import config_get_project_name, config_load
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ class BaseCommand:
         self._args = None
         self.argparser = argparse.ArgumentParser()
         self.argparser.add_argument(
-            "--config", type=argparse.FileType("r"), default="config.yaml"
+                "--config", type=argparse.FileType("r"), default="config.yaml"
         )
         self.add_arguments()
         self.config = config_load(self.args.config)
@@ -41,7 +42,7 @@ class StackCommand(BaseCommand):
     def add_arguments(self):
         self.argparser.add_argument("stack_type", type=str)
         self.argparser.add_argument(
-            "name", type=str,
+                "name", type=str,
         )
 
     def run(self):
@@ -63,18 +64,18 @@ class AccountCommand(BaseCommand):
 def get_boto_client(client_type, role_arn, account_name, region_name):
     credentials = get_boto_credentials(role_arn, account_name)
     return boto3.client(
-        client_type,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-        region_name=region_name,
+            client_type,
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+            region_name=region_name,
     )
 
 
 @lru_cache(maxsize=10)
 def get_boto_credentials(role_arn, account_name):
     response = boto3.client("sts").assume_role(
-        RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
+            RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
     )
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]

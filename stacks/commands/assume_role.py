@@ -1,9 +1,6 @@
 import logging
 
-from stacks.command import (
-    AccountCommand,
-    get_boto_credentials,
-)
+from stacks.command import AccountCommand, get_boto_credentials
 from stacks.config import config_get_role
 
 logger = logging.getLogger(__name__)
