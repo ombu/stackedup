@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
         name="stackedup",
-        version="0.0.8",
+        version="0.0.10",
         author="OMBU",
         author_email="martin@ombuweb.com",
         url="https://github.com/ombu/stacks",
