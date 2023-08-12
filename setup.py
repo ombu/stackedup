@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
         name="stackedup",
-        version="0.0.8",
+        version="0.0.11",
         author="OMBU",
         author_email="martin@ombuweb.com",
         url="https://github.com/ombu/stacks",
@@ -19,7 +19,7 @@ setuptools.setup(
             "Operating System :: OS Independent",
         ],
         python_requires=">=3.9",
-        install_requires=["boto3==1.26.101", "awscli==1.27.101", "tabulate==0.9.0"],
+        install_requires=["boto3==1.28.25", "awscli==1.29.25", "tabulate==0.9.0"],
         entry_points={
             "console_scripts": [
                 "assume-role = stacks.commands.assume_role:run",
