@@ -19,7 +19,8 @@ setuptools.setup(
             "Operating System :: OS Independent",
         ],
         python_requires=">=3.9",
-        install_requires=["boto3==1.28.25", "awscli==1.29.25", "tabulate==0.9.0"],
+        install_requires=["boto3==1.34.53", "tabulate==0.9.0", "PyYaml==6.0.1",
+                          "awscliv2"],
         entry_points={
             "console_scripts": [
                 "assume-role = stacks.commands.assume_role:run",

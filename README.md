@@ -156,6 +156,12 @@ a role for a desired account in the AWS console:
 
 ## Developing stacked up
 
+### Install dependencies in development mode
+
+```console
+python setup.py develop
+```
+
 ### Running tests
 
 ```console
