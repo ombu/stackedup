@@ -159,6 +159,7 @@ a role for a desired account in the AWS console:
 ### Install dependencies in development mode
 
 ```console
+pip install setuptools
 python setup.py develop
 ```
 
