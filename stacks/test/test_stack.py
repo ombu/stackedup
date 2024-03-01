@@ -25,23 +25,23 @@ parameters:
   Parameter1: my_key
   Parameter2: t3.small"""
         self.test_template_path = os.path.join(
-                os.path.realpath(os.path.dirname(__file__)), "templates"
+            os.path.realpath(os.path.dirname(__file__)), "templates"
         )
         self.live_stack = Stack(
-                project_name="tests",
-                stack_type="cluster",
-                name="core",
-                stack_config=yaml.load(self.live_stack_yaml, Loader=yaml.FullLoader),
-                region=config_get_stack_region(self.config, "cluster", "core"),
-                template_dir=self.test_template_path,
+            project_name="tests",
+            stack_type="cluster",
+            name="core",
+            stack_config=yaml.load(self.live_stack_yaml, Loader=yaml.FullLoader),
+            region=config_get_stack_region(self.config, "cluster", "core"),
+            template_dir=self.test_template_path,
         )
         self.new_stack = Stack(
-                project_name="tests",
-                stack_type="cluster",
-                name="core",
-                stack_config=yaml.load(self.new_stack_yaml, Loader=yaml.FullLoader),
-                region=config_get_stack_region(self.config, "cluster", "core"),
-                template_dir=self.test_template_path,
+            project_name="tests",
+            stack_type="cluster",
+            name="core",
+            stack_config=yaml.load(self.new_stack_yaml, Loader=yaml.FullLoader),
+            region=config_get_stack_region(self.config, "cluster", "core"),
+            template_dir=self.test_template_path,
         )
 
     def test_stack_name_property(self):
