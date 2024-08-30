@@ -1,0 +1,74 @@
+---
+name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+
+on: push
+
+jobs:
+
+  build:
+    # if: ${{ false }} # uncomment to disable this job
+    name: Build distribution 📦
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v4
+
+      # This step determines whether a release is a candidate for build
+      # Releases that are candidates for build are tags that match:
+      # - the SemVer format prefixed without v, such as 0.0.1
+      - name: Set the release version
+        id: get_version
+        run: |
+          release_version=$(echo $GITHUB_REF | cut -d / -f 3)
+          echo "GITHUB_REF: ${GITHUB_REF}"
+          # For the SemVer matching regex, see https://regex101.com/r/Ly7O1x/3/
+          is_build_candidate=$(if [[ $release_version =~ ^[0-9]*\.[0-9]*\.[0-9]*(-(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$ ]]; then echo "true"; fi)
+          echo "Build canidates are SemVer tags without the v prefix (i.e. 1.0.0, 1.0.0-dev1)"
+          if [[ $is_build_candidate ]]; then echo "'${release_version}' is a build candidate."; else echo "'${release_version}' is not a build candidate. Stopping."; fi
+          echo "is_build_candidate=$is_build_candidate" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+
+      - name: Set up Python
+        if: ${{ env.is_build_candidate }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.2"
+
+      - name: Install pypa/build
+        if: ${{ env.is_build_candidate }}
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+
+      - name: Build a binary wheel and a source tarball
+        if: ${{ env.is_build_candidate }}
+        run: python3 -m build
+
+      - name: Store the distribution packages
+        if: ${{ env.is_build_candidate }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-pypi:
+    if: startsWith(github.ref, 'refs/tags/')
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/stackedup
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
