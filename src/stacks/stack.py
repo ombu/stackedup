@@ -72,7 +72,12 @@ class Stack:
         return template
 
     def get_parameters(self, formatting="json"):
-        parameters = self.stack_config["parameters"]
+        parameters = self.stack_config.get("parameters", {})
+        # Get paramters from the environment to see if they should override
+        if parameters:
+            parameters = {
+                k: (os.environ[k] if k in os.environ else v) for k, v in parameters.items()
+            }
         if formatting == "json":
             return parameters
         if formatting == "cloudformation":
@@ -88,8 +93,7 @@ class Stack:
         """
         template_path = self.get_template_path()
 
-        # check if bucket exists or create it
-
+        # Check if bucket exists or create it
         s3 = boto3.client(
             "s3",
             aws_access_key_id=credentials["AccessKeyId"],

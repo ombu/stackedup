@@ -48,6 +48,20 @@ class TestStack:
         ]
         assert live_stack.get_parameters(formatting="unknown") is None
 
+    def test_get_parameters_env_override(self, live_stack, monkeypatch):
+        monkeypatch.setenv("Parameter1", "override_key")
+        monkeypatch.setenv("Parameter2", "override_size")
+
+        assert live_stack.get_parameters(formatting="json") == {
+            "Parameter1": "override_key",
+            "Parameter2": "override_size",
+        }
+
+        assert live_stack.get_parameters(formatting="cloudformation") == [
+            {"ParameterKey": "Parameter1", "ParameterValue": "override_key"},
+            {"ParameterKey": "Parameter2", "ParameterValue": "override_size"},
+        ]
+
     def test_create_calls_client(self, live_stack, capsys):
         client = mock.Mock()
         live_stack.create(client, Tags=[{"Key": "k", "Value": "v"}])
