@@ -100,7 +100,7 @@ class TestStack:
         assert "OutputKey" in table
         assert "OutputValue" in table
 
-    def test_package_template_happy_path(self, live_stack):
+    def test_package_template_path(self, live_stack):
         credentials = {
             "AccessKeyId": "AK",
             "SecretAccessKey": "SK",
@@ -121,6 +121,7 @@ class TestStack:
             aws_access_key_id="AK",
             aws_secret_access_key="SK",
             aws_session_token="TK",
+            region_name="us-east-1",
         )
         s3.head_bucket.assert_called_once_with(Bucket="bkt")
         check_output.assert_called_once()

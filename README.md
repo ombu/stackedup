@@ -93,8 +93,22 @@ Python requirements. In a project with a `requirements.txt` file:
 
 To run any stackedup command, your AWS CLI environment must be configured such
 that you are able to assume the roles included in the accounts section of the
-instance manifest. When running commands, stacked up will attempt to assume
-these roles.
+instance manifest.
+
+When running commands, stackedup will assume the configured
+`provisioner_role_arn` only when needed. If your current AWS credentials are
+already in the target AWS account (or you are already using the exact target
+role), stackedup will use your existing credentials and skip calling
+`sts:AssumeRole`.
+
+To see which identity is being used and whether a role was assumed, pass
+`--verbose` (`-v`) to any command. To always assume the role from `config.yaml`, pass
+`--force-assume-role` (`-f).
+
+Examples:
+
+    stack-launch cluster <cluster-name> --verbose
+    stack-update <service> <instance> --verbose
 
 ### Launching stacks
 

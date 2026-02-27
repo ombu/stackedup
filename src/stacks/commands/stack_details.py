@@ -30,7 +30,14 @@ class OutputsCommand(StackCommand):
             account_name = self.stack.account_name
         role_arn = config_get_role(self.config, account_name)
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
-        client = get_boto_client("cloudformation", role_arn, account_name, region_name)
+        client = get_boto_client(
+            "cloudformation",
+            role_arn,
+            account_name,
+            region_name,
+            force_assume_role=self.args.force_assume_role,
+            verbose=self.args.verbose,
+        )
         details = self.stack.get_details(client)
         print(f"\nStack Name: {self.stack.stack_name}")
         print(f"Status: {details['StackStatus']}\n")

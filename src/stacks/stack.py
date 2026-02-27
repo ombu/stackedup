@@ -90,12 +90,16 @@ class Stack:
 
         # check if bucket exists or create it
 
-        s3 = boto3.client(
-            "s3",
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-        )
+        if credentials:
+            s3 = boto3.client(
+                "s3",
+                aws_access_key_id=credentials["AccessKeyId"],
+                aws_secret_access_key=credentials["SecretAccessKey"],
+                aws_session_token=credentials["SessionToken"],
+                region_name=region_name,
+            )
+        else:
+            s3 = boto3.client("s3", region_name=region_name)
         try:
             s3.head_bucket(Bucket=bucket)
         except botocore.exceptions.ClientError:
@@ -103,6 +107,15 @@ class Stack:
 
         logger.info(f"Packaging template {template_path} to {bucket}")
         # TODO Check if bucket exists, and create it if necessary
+        env = None
+        if credentials:
+            env = {
+                **os.environ,
+                "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
+                "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
+                "AWS_SESSION_TOKEN": credentials["SessionToken"],
+            }
+
         packaged_template = subprocess.check_output(
             [
                 "aws",
@@ -117,12 +130,7 @@ class Stack:
                 "--region",
                 region_name,
             ],
-            env={
-                **os.environ,
-                "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
-                "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
-                "AWS_SESSION_TOKEN": credentials["SessionToken"],
-            },
+            env=env,
         )
         # Run the template through PyYaml, to catch formatting issues from
         # reading the output of the subprocess call

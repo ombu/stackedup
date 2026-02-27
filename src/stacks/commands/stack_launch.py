@@ -1,6 +1,6 @@
 import logging
 
-from stacks.command import StackCommand, get_boto_client, get_boto_credentials
+from stacks.command import StackCommand, get_boto_client, get_role_credentials_if_needed
 from stacks.config import (
     config_get_account_id,
     config_get_cloudformation_bucket,
@@ -33,12 +33,24 @@ class LaunchCommand(StackCommand):
         else:
             account_name = self.stack.account_name
         role_arn = config_get_role(self.config, account_name)
-        credentials = get_boto_credentials(role_arn, account_name)
+        credentials = get_role_credentials_if_needed(
+            role_arn,
+            account_name,
+            force_assume_role=self.args.force_assume_role,
+            verbose=self.args.verbose,
+        )
         account_id = config_get_account_id(self.config, self.args.stack_type, self.args.name)
         bucket = config_get_cloudformation_bucket(self.config, account_name)
         region_name = config_get_stack_region(self.config, self.args.stack_type, self.args.name)
         template_body = self.stack.package_template(credentials, bucket, region_name)
-        client = get_boto_client("cloudformation", role_arn, account_name, region_name)
+        client = get_boto_client(
+            "cloudformation",
+            role_arn,
+            account_name,
+            region_name,
+            force_assume_role=self.args.force_assume_role,
+            verbose=self.args.verbose,
+        )
         self.stack.create(client, TemplateBody=template_body)
 
 
