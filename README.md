@@ -72,7 +72,7 @@ instances:
     account: ombu
     cluster: dev
     application:
-      stack_name: my-project-stagomg-2005251208
+      stack_name: my-project-staging-2005251208
       parameters:
       ...
 ```
@@ -112,12 +112,20 @@ For a cluster:
 
     stack-details cluster <cluster-name>
 
+For an instance service:
+
     stack-details <service> <instance>
 
 ### Updating stacks
 
-After updating the parameters for an existing stack in the instance manifest
-(often \_config.yaml`), update the instance:
+After updating the parameters for an existing stack in the manifest
+(often \_config.yaml`), update the stack:
+
+For a cluster:
+
+    stack-update cluster <cluster-name>
+
+For an instance service:
 
     stack-update <service> <instance>
 
@@ -177,5 +185,4 @@ Edit `setup.py` with the desired target version. Then:
 pip install wheel twine
 python setup.py sdist bdist_wheel
 python -m twine upload dist/stackedup-<tag>*
-
 ```
