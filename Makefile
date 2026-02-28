@@ -34,7 +34,14 @@ guard-%:
 ## test: : Run tests
 .PHONY: test
 test:
-	cd src && python -m unittest discover
+	pytest -Wa --color=yes --code-highlight=yes --cache-clear
+
+## coverage: : Run coverage report
+.PHONY: coverage
+coverage:
+	python -m coverage erase
+	python -m coverage run -m pytest -q
+	python -m coverage report -m
 
 # ============================================================================ #
 # BUILD 
