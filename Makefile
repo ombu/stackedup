@@ -34,7 +34,7 @@ guard-%:
 ## test: : Run tests
 .PHONY: test
 test:
-	pytest -Wa --color=yes --code-highlight=yes --cache-clear
+	pytest -Wa --color=yes --code-highlight=yes --cache-clear --random-order
 
 ## coverage: : Run coverage report
 .PHONY: coverage
@@ -56,6 +56,15 @@ build-dist:
 .PHONY: build-upload
 build-upload: TAG
 	python -m twine upload dist/*
+
+# ============================================================================ #
+# BUILD 
+# ============================================================================ #
+
+## security/audit : : Run a full bandit check
+.PHONY: security/audit
+security/audit:
+	bandit -ll -r .
 
 # ============================================================================ #
 # QUALITY CONTROL

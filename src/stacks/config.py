@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def config_load(config_file):
-    c = yaml.load(config_file, Loader=yaml.FullLoader)
+    c = yaml.safe_load(config_file, Loader=yaml.FullLoader)
     c["instance_list"] = list(c["instances"].keys())
     logger.debug(f"Found these instances in config.yaml: {c['instance_list']}")
     return c
