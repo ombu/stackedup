@@ -128,7 +128,7 @@ class Stack:
         )
         # Run the template through PyYaml, to catch formatting issues from
         # reading the output of the subprocess call
-        y = yaml.safe_load(packaged_template.decode("utf-8"), Loader=yaml.FullLoader)
+        y = yaml.safe_load(packaged_template.decode("utf-8"))
         return yaml.dump(y)
 
     def create(self, client, **kwargs):

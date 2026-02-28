@@ -34,7 +34,7 @@ parameters:
             project_name="tests",
             stack_type="cluster",
             name="core",
-            stack_config=yaml.safe_load(self.live_stack_yaml, Loader=yaml.FullLoader),
+            stack_config=yaml.safe_load(self.live_stack_yaml),
             region=config_get_stack_region(self.config, "cluster", "core"),
             template_dir=self.test_template_path,
         )
@@ -42,7 +42,7 @@ parameters:
             project_name="tests",
             stack_type="cluster",
             name="core",
-            stack_config=yaml.safe_load(self.new_stack_yaml, Loader=yaml.FullLoader),
+            stack_config=yaml.safe_load(self.new_stack_yaml),
             region=config_get_stack_region(self.config, "cluster", "core"),
             template_dir=self.test_template_path,
         )
