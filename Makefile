@@ -57,7 +57,8 @@ build-upload: TAG
 ## install: : Install the requirements
 .PHONY: install
 install:
-	pip install -r requirements.txt
+	python -m pip install -r requirements.txt
+	python -m pip install -e .
 
 ## fmt-check: : Run all the format checks
 .PHONY: fmt-check
@@ -67,12 +68,12 @@ fmt-check: fmt-check-python
 ## fmt-python: : Apply code formatting rules
 .PHONY: fmt-python
 fmt-python:
-	black --line-length=80 .
+	black --line-length=110 .
 
 ## fmt-check-python: : Check code for incorrect formatting
 .PHONY: fmt-check-python
 fmt-check-python:
-	black --line-length=80 --diff --check .
+	black --line-length=110 --diff --check .
 
 ## fmt-md: : Format the md files
 .PHONY: fmt-md
