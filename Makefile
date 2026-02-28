@@ -34,7 +34,7 @@ guard-%:
 ## test: : Run tests
 .PHONY: test
 test:
-	pytest -Wa --color=yes --code-highlight=yes --cache-clear --random-order
+	pytest -Wa --color=yes --code-highlight=yes --cache-clear
 
 ## coverage: : Run coverage report
 .PHONY: coverage
