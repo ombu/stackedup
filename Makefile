@@ -34,7 +34,7 @@ guard-%:
 ## test: : Run tests
 .PHONY: test
 test:
-	python -m unittest discover
+	cd src && python -m unittest discover
 
 # ============================================================================ #
 # BUILD 
@@ -43,13 +43,12 @@ test:
 ## build-dist: : Build the distribution archives
 .PHONY: build-dist
 build-dist:
-	pip install wheel twine
-	python setup.py sdist bdist_wheel
+	python -m build
 
-## build-upload: TAG: Upload the distribution archives
+## build-upload: : Upload the distribution archives
 .PHONY: build-upload
 build-upload: TAG
-	python -m twine upload dist/stackedup-${TAG}*
+	python -m twine upload dist/*
 
 # ============================================================================ #
 # QUALITY CONTROL
@@ -58,8 +57,7 @@ build-upload: TAG
 ## install: : Install the requirements
 .PHONY: install
 install:
-	pip install setuptools black
-	python setup.py develop
+	pip install -r requirements.txt
 
 ## fmt-check: : Run all the format checks
 .PHONY: fmt-check
