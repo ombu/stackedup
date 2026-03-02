@@ -167,20 +167,20 @@ a role for a desired account in the AWS console:
 ### Install dependencies in development mode
 
 ```console
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ### Running tests
 
 ```console
-cd src && python -m unittest discover
+make test
 ```
 
-### Packaged and distribute
+### Package and distribute
 
 Edit `pyproject.toml` with the desired target version. Then:
 
 ```console
-python -m build
-python -m twine upload dist/*
+make build-dist
+make build-upload TAG=<version>
 ```
