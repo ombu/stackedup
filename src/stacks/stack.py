@@ -76,9 +76,7 @@ class Stack:
         if formatting == "json":
             return parameters
         if formatting == "cloudformation":
-            formatted_parameters = [
-                {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
-            ]
+            formatted_parameters = [{"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()]
             return formatted_parameters
 
     def package_template(self, credentials, bucket, region_name):
