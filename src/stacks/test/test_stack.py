@@ -1,120 +1,73 @@
 import datetime
 import os
-import runpy
-import unittest
 from unittest import mock
 
 import botocore.exceptions
-import yaml
 
-from stacks.config import config_get_stack_region, config_load
 from stacks.stack import Stack
 
 
-class TestStack(unittest.TestCase):
-    def setUp(self):
-        path = os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(path, "test_config.yaml")) as config_file:
-            self.config = config_load(config_file)
-        self.live_stack_yaml = """
-account: aws_account_for_the_stack
-parameters:
-  Parameter1: my_key
-  Parameter2: t3.small
-stack_name: the_stack_name"""
-        self.new_stack_yaml = """
-account: aws_account_for_the_stack
-parameters:
-  Parameter1: my_key
-  Parameter2: t3.small"""
-        self.test_template_path = os.path.join(
-            os.path.realpath(os.path.dirname(__file__)), "templates"
-        )
-        self.live_stack = Stack(
-            project_name="tests",
-            stack_type="cluster",
-            name="core",
-            stack_config=yaml.safe_load(self.live_stack_yaml),
-            region=config_get_stack_region(self.config, "cluster", "core"),
-            template_dir=self.test_template_path,
-        )
-        self.new_stack = Stack(
-            project_name="tests",
-            stack_type="cluster",
-            name="core",
-            stack_config=yaml.safe_load(self.new_stack_yaml),
-            region=config_get_stack_region(self.config, "cluster", "core"),
-            template_dir=self.test_template_path,
-        )
-
-    def test_stack_name_property(self):
-        self.assertEqual("the_stack_name", self.live_stack.stack_name)
+class TestStack:
+    def test_stack_name_property(self, live_stack, new_stack):
+        assert live_stack.stack_name == "the_stack_name"
         fixed = datetime.datetime(2020, 1, 2, 3, 4, 5)
         with mock.patch("stacks.stack.datetime.datetime") as dt:
             dt.now.return_value = fixed
-            dt.side_effect = lambda *a, **k: datetime.datetime(*a, **k)
-            self.assertEqual("tests-cluster-core-202001020304", self.new_stack.stack_name)
+            assert new_stack.stack_name == "tests-cluster-core-202001020304"
 
-    def test_account_name_property(self):
+    def test_account_name_property(self, live_stack, test_template_path):
         account_stack = Stack(
             project_name="tests",
             stack_type="account",
             name="acct",
             region="us-west-2",
             stack_config={"parameters": {}},
-            template_dir=self.test_template_path,
+            template_dir=test_template_path,
         )
-        self.assertEqual("acct", account_stack.account_name)
-        self.assertEqual("aws_account_for_the_stack", self.live_stack.account_name)
+        assert account_stack.account_name == "acct"
+        assert live_stack.account_name == "aws_account_for_the_stack"
 
-    def test_get_template_path(self):
-        template_file = os.path.join(self.test_template_path, "cluster.yaml")
-        self.assertEqual(template_file, self.new_stack.get_template_path())
+    def test_get_template_path(self, new_stack, test_template_path):
+        template_file = os.path.join(test_template_path, "cluster.yaml")
+        assert new_stack.get_template_path() == template_file
 
-    def test_get_template_body(self):
-        template_file = os.path.join(self.test_template_path, "cluster.yaml")
-        with open(template_file, "r") as f:
+    def test_get_template_body(self, new_stack, test_template_path):
+        template_file = os.path.join(test_template_path, "cluster.yaml")
+        with open(template_file) as f:
             template_body = f.read()
-        self.assertEqual(template_body, self.new_stack.get_template_body)
+        assert new_stack.get_template_body == template_body
 
-    def test_get_parameters(self):
-        self.assertEqual(
-            {"Parameter1": "my_key", "Parameter2": "t3.small"},
-            self.live_stack.get_parameters(formatting="json"),
-        )
-        self.assertEqual(
-            [
-                {"ParameterKey": "Parameter1", "ParameterValue": "my_key"},
-                {"ParameterKey": "Parameter2", "ParameterValue": "t3.small"},
-            ],
-            self.live_stack.get_parameters(formatting="cloudformation"),
-        )
-        self.assertIsNone(self.live_stack.get_parameters(formatting="unknown"))
+    def test_get_parameters(self, live_stack):
+        assert live_stack.get_parameters(formatting="json") == {
+            "Parameter1": "my_key",
+            "Parameter2": "t3.small",
+        }
+        assert live_stack.get_parameters(formatting="cloudformation") == [
+            {"ParameterKey": "Parameter1", "ParameterValue": "my_key"},
+            {"ParameterKey": "Parameter2", "ParameterValue": "t3.small"},
+        ]
+        assert live_stack.get_parameters(formatting="unknown") is None
 
-    def test_create_calls_client(self):
+    def test_create_calls_client(self, live_stack, capsys):
         client = mock.Mock()
-        with mock.patch("builtins.print") as p:
-            self.live_stack.create(client, Tags=[{"Key": "k", "Value": "v"}])
-        p.assert_called_once_with("the_stack_name")
+        live_stack.create(client, Tags=[{"Key": "k", "Value": "v"}])
+        assert capsys.readouterr().out == "the_stack_name\n"
         client.create_stack.assert_called_once()
         kwargs = client.create_stack.call_args.kwargs
-        self.assertEqual(kwargs["StackName"], "the_stack_name")
-        self.assertTrue(kwargs["DisableRollback"])
-        self.assertIn("CAPABILITY_NAMED_IAM", kwargs["Capabilities"])
-        self.assertEqual(
-            kwargs["Parameters"],
-            self.live_stack.get_parameters(formatting="cloudformation"),
-        )
+        assert kwargs["StackName"] == "the_stack_name"
+        assert kwargs["DisableRollback"] is True
+        assert "CAPABILITY_NAMED_IAM" in kwargs["Capabilities"]
+        assert kwargs["Parameters"] == live_stack.get_parameters(formatting="cloudformation")
 
-    def test_update_calls_client(self):
+    def test_update_calls_client(self, live_stack):
         client = mock.Mock()
-        self.live_stack.update(client)
+        live_stack.update(client)
         client.update_stack.assert_called_once()
         kwargs = client.update_stack.call_args.kwargs
-        self.assertEqual(kwargs["StackName"], "the_stack_name")
-        self.assertIn("CAPABILITY_AUTO_EXPAND", kwargs["Capabilities"])
+        assert kwargs["StackName"] == "the_stack_name"
+        assert "CAPABILITY_AUTO_EXPAND" in kwargs["Capabilities"]
 
-    def test_describe_helpers(self):
+    def test_describe_helpers(self, live_stack):
         client = mock.Mock()
         client.describe_stacks.return_value = {
             "Stacks": [
@@ -127,9 +80,9 @@ parameters:
                 }
             ]
         }
-        self.assertEqual(self.live_stack.get_details(client)["StackId"], "id")
-        self.assertEqual(len(self.live_stack.get_outputs(client)), 2)
-        self.assertEqual(self.live_stack.get_output(client, "B"), "2")
+        assert live_stack.get_details(client)["StackId"] == "id"
+        assert len(live_stack.get_outputs(client)) == 2
+        assert live_stack.get_output(client, "B") == "2"
 
     def test_tabulate_results_strips_optional_fields(self):
         outputs = [
@@ -142,12 +95,12 @@ parameters:
             {"OutputKey": "B", "OutputValue": "2"},
         ]
         table = Stack.tabulate_results(outputs)
-        self.assertNotIn("Description", outputs[0])
-        self.assertNotIn("ExportName", outputs[0])
-        self.assertIn("OutputKey", table)
-        self.assertIn("OutputValue", table)
+        assert "Description" not in outputs[0]
+        assert "ExportName" not in outputs[0]
+        assert "OutputKey" in table
+        assert "OutputValue" in table
 
-    def test_package_template_happy_path(self):
+    def test_package_template_happy_path(self, live_stack):
         credentials = {
             "AccessKeyId": "AK",
             "SecretAccessKey": "SK",
@@ -161,7 +114,7 @@ parameters:
                 return_value=b"Resources: {}\n",
             ) as check_output,
         ):
-            result = self.live_stack.package_template(credentials, "bkt", "us-east-1")
+            result = live_stack.package_template(credentials, "bkt", "us-east-1")
 
         boto_client.assert_called_once_with(
             "s3",
@@ -172,11 +125,11 @@ parameters:
         s3.head_bucket.assert_called_once_with(Bucket="bkt")
         check_output.assert_called_once()
         call = check_output.call_args
-        self.assertIn("aws", call.args[0][0])
-        self.assertEqual(call.kwargs["env"]["AWS_ACCESS_KEY_ID"], "AK")
-        self.assertIn("Resources", result)
+        assert "aws" in call.args[0][0]
+        assert call.kwargs["env"]["AWS_ACCESS_KEY_ID"] == "AK"
+        assert "Resources" in result
 
-    def test_package_template_bucket_missing_prints(self):
+    def test_package_template_bucket_missing_prints(self, live_stack, capsys):
         credentials = {
             "AccessKeyId": "AK",
             "SecretAccessKey": "SK",
@@ -193,17 +146,6 @@ parameters:
                 "stacks.stack.subprocess.check_output",
                 return_value=b"Resources: {}\n",
             ),
-            mock.patch("builtins.print") as p,
         ):
-            self.live_stack.package_template(credentials, "bkt", "us-east-1")
-        p.assert_any_call("Bucket not available bkt")
-
-    def test_main_guard_calls_unittest_main(self):
-        test_file = os.path.abspath(__file__)
-        with mock.patch("unittest.main") as main:
-            runpy.run_path(test_file, run_name="__main__")
-            main.assert_called_once()
-
-
-if __name__ == "__main__":
-    unittest.main()
+            live_stack.package_template(credentials, "bkt", "us-east-1")
+        assert "Bucket not available bkt" in capsys.readouterr().out
