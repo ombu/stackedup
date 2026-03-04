@@ -44,7 +44,7 @@ jobs:
 
       - name: Store the distribution packages
         if: ${{ env.is_build_candidate }}
-        uses: actions/upload-artifactv7
+        uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
           path: dist/
