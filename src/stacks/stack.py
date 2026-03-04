@@ -75,9 +75,7 @@ class Stack:
         parameters = self.stack_config.get("parameters", {})
         # Get paramters from the environment to see if they should override
         if parameters:
-            parameters = {
-                k: (os.environ[k] if k in os.environ else v) for k, v in parameters.items()
-            }
+            parameters = {k: (os.environ[k] if k in os.environ else v) for k, v in parameters.items()}
         if formatting == "json":
             return parameters
         if formatting == "cloudformation":
