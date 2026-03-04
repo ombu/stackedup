@@ -23,6 +23,18 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "bandit==1.8.3",
+    "black==25.11.0",
+    "coverage==7.8.2",
+    "pytest==8.3.5",
+]
+publish = [
+    "build==1.4.0",
+    "twine==6.2.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/ombu/stacks"
 
@@ -34,7 +46,10 @@ stack-details = "stacks.commands.stack_details:run"
 container-shell = "stacks.commands.container_shell:run"
 
 [tool.hatch.build]
-exclude = ['/Makefile', '/requirements.txt', '/.*']
+exclude = ['/Makefile', '/.*']
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/stacks"]
+
+[tool.black]
+line-length = 110

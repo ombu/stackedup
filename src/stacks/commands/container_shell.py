@@ -17,9 +17,7 @@ class ContainerShellCommand(InstanceCommand):
     def __init__(self):
         super().__init__()
         stack_type = "application"
-        stack_config_instance = config_get_stack_config(
-            self.config, self.args.service, self.args.name
-        )
+        stack_config_instance = config_get_stack_config(self.config, self.args.service, self.args.name)
         self.stack = Stack(
             project_name=self.project_name,
             stack_type=stack_type,
@@ -29,9 +27,7 @@ class ContainerShellCommand(InstanceCommand):
         )
 
         cluster_name = stack_config_instance["cluster"]
-        stack_config_cluster = config_get_stack_config(
-            self.config, "cluster", cluster_name
-        )
+        stack_config_cluster = config_get_stack_config(self.config, "cluster", cluster_name)
         self.cluster_stack = Stack(
             project_name=self.project_name,
             stack_type="cluster",
@@ -56,12 +52,8 @@ class ContainerShellCommand(InstanceCommand):
 
         account_name = self.stack.account_name
         role_arn = config_get_role(self.config, account_name)
-        region_name = config_get_stack_region(
-            self.config, self.stack.type, self.stack.name
-        )
-        cf_client = get_boto_client(
-            "cloudformation", role_arn, account_name, region_name
-        )
+        region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
+        cf_client = get_boto_client("cloudformation", role_arn, account_name, region_name)
         stack_details = self.stack.get_details(cf_client)
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
@@ -72,9 +64,7 @@ class ContainerShellCommand(InstanceCommand):
                 if d["OutputKey"] == f"ServiceName{self.args.ecsservice}"
             ][0]
         except IndexError:
-            logger.error(
-                f"Unable to find output ServiceName{self.args.ecsservice} in {cluster_name}"
-            )
+            logger.error(f"Unable to find output ServiceName{self.args.ecsservice} in {cluster_name}")
             exit(1)
 
         # Get the task id from list_tasks
@@ -95,9 +85,7 @@ class ContainerShellCommand(InstanceCommand):
                 for d in response["tasks"][0]["containers"]
                 if d["name"] == self.args.container_name
             ][0]
-            logger.info(
-                f"Found an instance {container_instance_id} running the container {container_id}"
-            )
+            logger.info(f"Found an instance {container_instance_id} running the container {container_id}")
         except KeyError:
             logger.error(f"Unable to find a container id for the task {task_id}")
             exit(1)
@@ -112,8 +100,7 @@ class ContainerShellCommand(InstanceCommand):
         public_dns_name = response["Reservations"][0]["Instances"][0]["PublicDnsName"]
 
         ssh_command = (
-            f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} "
-            f"docker exec -it {container_id} sh"
+            f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} " f"docker exec -it {container_id} sh"
         )
         print(ssh_command)
 
