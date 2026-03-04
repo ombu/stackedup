@@ -37,10 +37,10 @@ instances:
     account: test_aws_account1
     cluster: core2
     application:
+      stack_name: stacks-application-testing1
       parameters:
         domain: testing1.example.org
         listener_priority: 1001
-      stack_name: stacks-application-testing1
     transaction_pipeline:
       stack_name: stacks-transaction-pipeline-testing1
     deployment_pipeline:

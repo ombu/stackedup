@@ -76,9 +76,7 @@ class Stack:
         if formatting == "json":
             return parameters
         if formatting == "cloudformation":
-            formatted_parameters = [
-                {"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()
-            ]
+            formatted_parameters = [{"ParameterKey": k, "ParameterValue": v} for k, v in parameters.items()]
             return formatted_parameters
 
     def package_template(self, credentials, bucket, region_name):
@@ -128,7 +126,7 @@ class Stack:
         )
         # Run the template through PyYaml, to catch formatting issues from
         # reading the output of the subprocess call
-        y = yaml.load(packaged_template.decode("utf-8"), Loader=yaml.FullLoader)
+        y = yaml.safe_load(packaged_template.decode("utf-8"))
         return yaml.dump(y)
 
     def create(self, client, **kwargs):

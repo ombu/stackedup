@@ -34,7 +34,14 @@ guard-%:
 ## test: : Run tests
 .PHONY: test
 test:
-	python -m unittest discover
+	pytest -Wa --color=yes --code-highlight=yes --cache-clear
+
+## coverage: : Run coverage report
+.PHONY: coverage
+coverage:
+	python -m coverage erase
+	python -m coverage run -m pytest -q
+	python -m coverage report -m
 
 # ============================================================================ #
 # BUILD 
@@ -43,13 +50,23 @@ test:
 ## build-dist: : Build the distribution archives
 .PHONY: build-dist
 build-dist:
-	pip install wheel twine
-	python setup.py sdist bdist_wheel
+	python -m pip install -e ".[publish]"
+	python -m build
 
-## build-upload: TAG: Upload the distribution archives
+## build-upload: : Upload the distribution archives
 .PHONY: build-upload
-build-upload: TAG
-	python -m twine upload dist/stackedup-${TAG}*
+build-upload: guard-TAG
+	python -m pip install -e ".[publish]"
+	python -m twine upload dist/*
+
+# ============================================================================ #
+# BUILD 
+# ============================================================================ #
+
+## security/audit : : Run a full bandit check
+.PHONY: security/audit
+security/audit:
+	bandit -ll -r .
 
 # ============================================================================ #
 # QUALITY CONTROL
@@ -58,8 +75,7 @@ build-upload: TAG
 ## install: : Install the requirements
 .PHONY: install
 install:
-	pip install setuptools black
-	python setup.py develop
+	python -m pip install -e ".[dev]"
 
 ## fmt-check: : Run all the format checks
 .PHONY: fmt-check
@@ -69,12 +85,12 @@ fmt-check: fmt-check-python
 ## fmt-python: : Apply code formatting rules
 .PHONY: fmt-python
 fmt-python:
-	black --line-length=80 .
+	black .
 
 ## fmt-check-python: : Check code for incorrect formatting
 .PHONY: fmt-check-python
 fmt-check-python:
-	black --line-length=80 --diff --check .
+	black --diff --check .
 
 ## fmt-md: : Format the md files
 .PHONY: fmt-md

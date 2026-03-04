@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stackedup"
+version = "0.0.15"
+authors = [
+  { name="OMBU", email="martin@ombuweb.com" },
+]
+description="Tooling to help manage CloudFormation stacks"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "boto3>=1.34.53",
+    "tabulate>=0.9.0",
+    "PyYAML>=6.0.1",
+    "awscliv2",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = [
+    "bandit==1.8.3",
+    "black==25.11.0",
+    "coverage==7.8.2",
+    "pytest==8.3.5",
+]
+publish = [
+    "build==1.4.0",
+    "twine==6.2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ombu/stacks"
+
+[project.scripts]
+assume-role = "stacks.commands.assume_role:run"
+stack-launch = "stacks.commands.stack_launch:run"
+stack-update = "stacks.commands.stack_update:run"
+stack-details = "stacks.commands.stack_details:run"
+container-shell = "stacks.commands.container_shell:run"
+
+[tool.hatch.build]
+exclude = ['/Makefile', '/.*']
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stacks"]
+
+[tool.black]
+line-length = 110

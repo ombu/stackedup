@@ -167,22 +167,20 @@ a role for a desired account in the AWS console:
 ### Install dependencies in development mode
 
 ```console
-pip install setuptools
-python setup.py develop
+pip install -e ".[dev]"
 ```
 
 ### Running tests
 
 ```console
-python -m unittest discover
+make test
 ```
 
-### Packaged and distribute
+### Package and distribute
 
-Edit `setup.py` with the desired target version. Then:
+Edit `pyproject.toml` with the desired target version. Then:
 
 ```console
-pip install wheel twine
-python setup.py sdist bdist_wheel
-python -m twine upload dist/stackedup-<tag>*
+make build-dist
+make build-upload TAG=<version>
 ```

@@ -23,7 +23,7 @@ jobs:
           echo "GITHUB_REF: ${GITHUB_REF}"
           # For the SemVer matching regex, see https://regex101.com/r/Ly7O1x/3/
           is_build_candidate=$(if [[ $release_version =~ ^[0-9]*\.[0-9]*\.[0-9]*(-(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$ ]]; then echo "true"; fi)
-          echo "Build canidates are SemVer tags without the v prefix (i.e. 1.0.0, 1.0.0-dev1)"
+          echo "Build candidates are SemVer tags without the v prefix (i.e. 1.0.0, 1.0.0-dev1)"
           if [[ $is_build_candidate ]]; then echo "'${release_version}' is a build candidate."; else echo "'${release_version}' is not a build candidate. Stopping."; fi
           echo "is_build_candidate=$is_build_candidate" >> $GITHUB_ENV
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
@@ -34,13 +34,9 @@ jobs:
         with:
           python-version: "3.14.3"
 
-      - name: Install pypa/build
+      - name: Install build dependencies
         if: ${{ env.is_build_candidate }}
-        run: >-
-          python3 -m
-          pip install
-          build
-          --user
+        run: python -m pip install ".[publish]"
 
       - name: Build a binary wheel and a source tarball
         if: ${{ env.is_build_candidate }}

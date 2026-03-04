@@ -13,9 +13,7 @@ class BaseCommand:
     def __init__(self, *args):
         self._args = None
         self.argparser = argparse.ArgumentParser()
-        self.argparser.add_argument(
-            "--config", type=argparse.FileType("r"), default="config.yaml"
-        )
+        self.argparser.add_argument("--config", type=argparse.FileType("r"), default="config.yaml")
         self.add_arguments()
         self.config = config_load(self.args.config)
         self.project_name = config_get_project_name(self.config)
@@ -75,9 +73,7 @@ def get_boto_client(client_type, role_arn, account_name, region_name):
 
 @lru_cache(maxsize=10)
 def get_boto_credentials(role_arn, account_name):
-    response = boto3.client("sts").assume_role(
-        RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
-    )
+    response = boto3.client("sts").assume_role(RoleArn=role_arn, RoleSessionName=f"{account_name}_session")
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]
 
