@@ -1,6 +1,10 @@
 import logging
 
-from stacks.command import StackCommand, get_boto_client, get_role_credentials_if_needed
+from stacks.command import (
+    StackCommand,
+    get_boto_client,
+    get_role_credentials_if_needed,
+)
 from stacks.config import (
     config_get_account_id,
     config_get_cloudformation_bucket,

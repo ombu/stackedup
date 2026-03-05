@@ -143,7 +143,10 @@ class Stack:
                 "StackName": self.stack_name,
                 "Parameters": self.get_parameters(formatting="cloudformation"),
                 "DisableRollback": True,
-                "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
+                "Capabilities": [
+                    "CAPABILITY_NAMED_IAM",
+                    "CAPABILITY_AUTO_EXPAND",
+                ],
             }
         )
         print(self.stack_name)
@@ -155,7 +158,10 @@ class Stack:
             {
                 "StackName": self.stack_name,
                 "Parameters": self.get_parameters(formatting="cloudformation"),
-                "Capabilities": ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
+                "Capabilities": [
+                    "CAPABILITY_NAMED_IAM",
+                    "CAPABILITY_AUTO_EXPAND",
+                ],
             }
         )
         client.update_stack(**kwargs)

@@ -16,12 +16,14 @@ class BaseCommand:
         self.argparser = argparse.ArgumentParser()
         self.argparser.add_argument("--config", type=argparse.FileType("r"), default="config.yaml")
         self.argparser.add_argument(
-            "-v", "--verbose",
+            "-v",
+            "--verbose",
             action="store_true",
             help="Print current AWS identity and assume-role decisions",
         )
         self.argparser.add_argument(
-             "-f", "--force-assume-role",
+            "-f",
+            "--force-assume-role",
             action="store_true",
             help="Always assume the provisioner role from config.yaml",
         )
