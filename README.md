@@ -125,7 +125,7 @@ For an instance service:
 ### Updating stacks
 
 After updating the parameters for an existing stack in the manifest
-(often \_config.yaml`), update the stack:
+(often `\_config.yaml`), update the stack:
 
 For a cluster:
 
@@ -134,6 +134,45 @@ For a cluster:
 For an instance service:
 
     stack-update <service> <instance>
+
+### Overriding parameters with environment variables
+
+When using stackedup commands parameters for the stack come from the manifest
+(often `\_config.yaml`) and can be overridden with environment variables
+with the following condition:
+
+ - If an environment variable exists with the same name as a parameter key in
+   the `\_config.yaml` manifest.
+
+Example: `\_config.yaml`
+
+```yaml
+---
+project_name: my-project
+
+...
+
+instances:
+
+  # testing
+  testing:
+    account: ombu
+    cluster: dev
+    application:
+      stack_name: my-project-testing-2005251108
+      parameters:
+        ClusterStack: my-project-cluster-dev-2005251008
+        EnvironmentType: testing
+        ImageTag: v1.0.11
+        ...
+```
+
+Example override for the `ImageTag`:
+
+```console
+export ImageTag=v1.0.12
+stack-update application testing
+```
 
 ### Opening a shell session in a service container (==experimental==)
 
@@ -182,11 +221,16 @@ pip install -e ".[dev]"
 make test
 ```
 
+### Package build
+
+```console
+make build-dist
+```
+
 ### Package and distribute
 
 Edit `pyproject.toml` with the desired target version. Then:
 
 ```console
-make build-dist
 make build-upload
 ```

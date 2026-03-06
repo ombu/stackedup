@@ -55,12 +55,17 @@ build-dist:
 
 ## build-upload: : Upload the distribution archives
 .PHONY: build-upload
-build-upload: guard-TAG
+build-upload:
 	python -m pip install -e ".[publish]"
 	python -m twine upload dist/*
 
+## install-dist: : Install the local built distribution archives
+.PHONY: install-dist
+install-dist:
+	python -m pip install dist/stackedup-*.tar.gz
+
 # ============================================================================ #
-# BUILD 
+# SECURITY 
 # ============================================================================ #
 
 ## security/audit : : Run a full bandit check
