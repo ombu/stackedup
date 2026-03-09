@@ -93,8 +93,14 @@ Python requirements. In a project with a `requirements.txt` file:
 
 To run any stackedup command, your AWS CLI environment must be configured such
 that you are able to assume the roles included in the accounts section of the
-instance manifest. When running commands, stacked up will attempt to assume
-these roles.
+instance manifest.
+
+### Before using commands
+
+Use the following command if your current AWS CLI session is not in the target
+AWS account you want to run the stackedup commands in first.
+
+    assume-role <account-name>
 
 ### Launching stacks
 
@@ -148,11 +154,11 @@ substitution:
 ## AWS accounts
 
 stackedup can manage instances across AWS accounts, through IAM roles. The AWS
-accounts their IAM roles for a project are defined in the `accounts:` section of
-the instance manifest (usually a file named `config.yaml`). stackedup commands
-automatically switch roles into the right account when performing stack
-operations. One can also use the information in the instance manifest to assume
-a role for a desired account in the AWS console:
+accounts and their IAM roles for a project are defined in the `accounts:`
+section of the manifest (usually a file named `config.yaml`). One should use the
+information in the instance manifest to assume a role for a desired account in
+the AWS console before running commands if your AWS CLI sessions in not already
+in the target AWS account:
 
 1. Log into the AWS console for the master AWS account and open the _Switch
    Role_ view
@@ -182,5 +188,5 @@ Edit `pyproject.toml` with the desired target version. Then:
 
 ```console
 make build-dist
-make build-upload TAG=<version>
+make build-upload
 ```
