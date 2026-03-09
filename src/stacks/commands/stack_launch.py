@@ -27,6 +27,10 @@ class LaunchCommand(StackCommand):
         )
 
     def run(self):
+        if self.args.stack_type == "account":
+            account_name = "_root"
+        else:
+            account_name = self.stack.account_name
         credentials = get_boto_credentials()
         account_id = config_get_account_id(self.config, self.args.stack_type, self.args.name)
         bucket = config_get_cloudformation_bucket(self.config, account_name)

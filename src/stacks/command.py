@@ -64,9 +64,9 @@ def get_boto_client(client_type, region_name):
     credentials = get_boto_credentials()
     return boto3.client(
         client_type,
-        aws_access_key_id=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key,
-        aws_session_token=credentials.token,
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
         region_name=region_name,
     )
 
@@ -74,9 +74,13 @@ def get_boto_client(client_type, region_name):
 @lru_cache(maxsize=10)
 def get_boto_credentials():
     session = boto3.Session()
-    response = session.get_credentials().get_frozen_credentials()
+    credentials = session.get_credentials().get_frozen_credentials()
     logger.info(f"Get current session credentials")
-    return response
+    return {
+        "AccessKeyId": credentials.access_key,
+        "SecretAccessKey": credentials.secret_key,
+        "SessionToken": credentials.token,
+    }
 
 
 @lru_cache(maxsize=10)
