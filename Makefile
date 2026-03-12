@@ -44,7 +44,7 @@ coverage:
 	python -m coverage report -m
 
 # ============================================================================ #
-# BUILD 
+# BUILD
 # ============================================================================ #
 
 ## build-dist: : Build the distribution archives
@@ -65,15 +65,6 @@ install-dist:
 	python -m pip install dist/stackedup-*.tar.gz
 
 # ============================================================================ #
-# SECURITY 
-# ============================================================================ #
-
-## security/audit : : Run a full bandit check
-.PHONY: security/audit
-security/audit:
-	bandit -ll -r .
-
-# ============================================================================ #
 # QUALITY CONTROL
 # ============================================================================ #
 
@@ -90,14 +81,31 @@ fmt-check: fmt-check-python
 ## fmt-python: : Apply code formatting rules
 .PHONY: fmt-python
 fmt-python:
-	black .
+	ruff format .
 
 ## fmt-check-python: : Check code for incorrect formatting
 .PHONY: fmt-check-python
 fmt-check-python:
-	black --diff --check .
+	ruff check .
 
 ## fmt-md: : Format the md files
 .PHONY: fmt-md
 fmt-md:
 	prettier README.md -w
+
+# ==================================================================================== #
+# Release
+# ==================================================================================== #
+
+# Revision when the project started automatically tracking changelog
+CHANGELOG_START_REV = "0.0.15"
+
+## changelog/next: Preview the next changelog section for unreleased commits
+.PHONY: changelog/next
+changelog/next:
+	git-cliff --bump -u $(CHANGELOG_START_REV)..
+
+## changelog/generate: Write CHANGELOG.md from all tracked commits
+.PHONY: changelog/generate
+changelog/generate:
+	git-cliff $(CHANGELOG_START_REV).. --output CHANGELOG.md
