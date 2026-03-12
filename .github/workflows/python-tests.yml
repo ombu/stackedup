@@ -5,7 +5,7 @@ on: [push]
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -19,18 +19,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: pre-commit/action@v3.0.1
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           make install
-
-      - name: Check formatting
-        run: |
-          make fmt-check
-
-      - name: Security audit
-        run: |
-          make security/audit
 
       - name: Test with pytest
         run: |
