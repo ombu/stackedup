@@ -19,7 +19,7 @@ clusters:
     region: us-west-2
     parameters:
       KeyName: my_key
-      InstnaceType: t3.small
+      InstanceType: t3.small
       ClusterSize: 2
       DbAllocatedAtorage: 5
       DbInstanceType: db.t3.small

@@ -205,10 +205,13 @@ in the target AWS account:
 
 ## Developing stacked up
 
+The tools necessary to develop stacked up are listed in the `.tool-versions`
+file.
+
 ### Install dependencies in development mode
 
 ```console
-pip install -e ".[dev]"
+make install
 ```
 
 ### Running tests
