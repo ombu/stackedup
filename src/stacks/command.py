@@ -60,8 +60,8 @@ class AccountCommand(BaseCommand):
 
 
 @lru_cache(maxsize=10)
-def get_boto_client(client_type, role_arn, account_name, region_name):
-    credentials = get_boto_credentials(role_arn, account_name)
+def get_boto_client(client_type, region_name):
+    credentials = get_boto_credentials()
     return boto3.client(
         client_type,
         aws_access_key_id=credentials["AccessKeyId"],
@@ -72,7 +72,19 @@ def get_boto_client(client_type, role_arn, account_name, region_name):
 
 
 @lru_cache(maxsize=10)
-def get_boto_credentials(role_arn, account_name):
+def get_boto_credentials():
+    session = boto3.Session()
+    credentials = session.get_credentials().get_frozen_credentials()
+    logger.info("Get current session credentials")
+    return {
+        "AccessKeyId": credentials.access_key,
+        "SecretAccessKey": credentials.secret_key,
+        "SessionToken": credentials.token,
+    }
+
+
+@lru_cache(maxsize=10)
+def get_boto_assumed_credentials(role_arn, account_name):
     response = boto3.client("sts").assume_role(RoleArn=role_arn, RoleSessionName=f"{account_name}_session")
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]

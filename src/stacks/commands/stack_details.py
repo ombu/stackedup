@@ -2,7 +2,6 @@ import logging
 from stacks.config import (
     config_get_stack_config,
     config_get_stack_region,
-    config_get_role,
 )
 from stacks.stack import Stack
 from stacks.command import StackCommand, get_boto_client
@@ -24,13 +23,8 @@ class OutputsCommand(StackCommand):
         )
 
     def run(self):
-        if self.args.stack_type == "account":
-            account_name = "_root"
-        else:
-            account_name = self.stack.account_name
-        role_arn = config_get_role(self.config, account_name)
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
-        client = get_boto_client("cloudformation", role_arn, account_name, region_name)
+        client = get_boto_client("cloudformation", region_name)
         details = self.stack.get_details(client)
         print(f"\nStack Name: {self.stack.stack_name}")
         print(f"Status: {details['StackStatus']}\n")

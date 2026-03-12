@@ -3,7 +3,6 @@ from os import path
 
 from stacks.command import InstanceCommand, get_boto_client
 from stacks.config import (
-    config_get_role,
     config_get_stack_config,
     config_get_stack_region,
 )
@@ -43,17 +42,14 @@ class ContainerShellCommand(InstanceCommand):
         self.argparser.add_argument("container_name", type=str)
 
     def run(self):
-
         key_name = self.cluster_stack.get_parameters()["KeyName"]
         ssh_key = path.join(path.expanduser("~"), ".ssh", key_name)
         if not path.exists(ssh_key):
             logger.error(f"Could not find the required SSH key {ssh_key}")
             exit(1)
 
-        account_name = self.stack.account_name
-        role_arn = config_get_role(self.config, account_name)
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
-        cf_client = get_boto_client("cloudformation", role_arn, account_name, region_name)
+        cf_client = get_boto_client("cloudformation", region_name)
         stack_details = self.stack.get_details(cf_client)
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
@@ -68,7 +64,7 @@ class ContainerShellCommand(InstanceCommand):
             exit(1)
 
         # Get the task id from list_tasks
-        ecs_client = get_boto_client("ecs", role_arn, account_name, region_name)
+        ecs_client = get_boto_client("ecs", region_name)
         response = ecs_client.list_tasks(
             cluster=cluster_name,
             serviceName=service_name,
@@ -95,7 +91,7 @@ class ContainerShellCommand(InstanceCommand):
             cluster=cluster_name, containerInstances=(container_instance_id,)
         )
         instance_id = response["containerInstances"][0]["ec2InstanceId"]
-        ec2_client = get_boto_client("ec2", role_arn, account_name, region_name)
+        ec2_client = get_boto_client("ec2", region_name)
         response = ec2_client.describe_instances(InstanceIds=(instance_id,))
         public_dns_name = response["Reservations"][0]["Instances"][0]["PublicDnsName"]
 
