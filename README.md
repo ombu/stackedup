@@ -157,7 +157,7 @@ stackedup can manage instances across AWS accounts, through IAM roles. The AWS
 accounts and their IAM roles for a project are defined in the `accounts:`
 section of the manifest (usually a file named `config.yaml`). One should use the
 information in the instance manifest to assume a role for a desired account in
-the AWS console before running commands if your AWS CLI sessions in not already
+the AWS console before running commands if your AWS CLI sessions is not already
 in the target AWS account:
 
 1. Log into the AWS console for the master AWS account and open the _Switch

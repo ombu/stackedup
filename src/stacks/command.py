@@ -75,7 +75,7 @@ def get_boto_client(client_type, region_name):
 def get_boto_credentials():
     session = boto3.Session()
     credentials = session.get_credentials().get_frozen_credentials()
-    logger.info(f"Get current session credentials")
+    logger.info("Get current session credentials")
     return {
         "AccessKeyId": credentials.access_key,
         "SecretAccessKey": credentials.secret_key,
