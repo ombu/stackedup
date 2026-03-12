@@ -96,7 +96,7 @@ class ContainerShellCommand(InstanceCommand):
         public_dns_name = response["Reservations"][0]["Instances"][0]["PublicDnsName"]
 
         ssh_command = (
-            f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} " f"docker exec -it {container_id} sh"
+            f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} docker exec -it {container_id} sh"
         )
         print(ssh_command)
 

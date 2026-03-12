@@ -14,9 +14,9 @@ class AssumeRoleCommand(AccountCommand):
     def run(self):
         role_arn = config_get_role(self.config, self.args.account_name)
         c = get_boto_assumed_credentials(role_arn, self.args.account_name)
-        print(f'export AWS_ACCESS_KEY_ID={c["AccessKeyId"]}')
-        print(f'export AWS_SECRET_ACCESS_KEY={c["SecretAccessKey"]}')
-        print(f'export AWS_SESSION_TOKEN={c["SessionToken"]}')
+        print(f"export AWS_ACCESS_KEY_ID={c['AccessKeyId']}")
+        print(f"export AWS_SECRET_ACCESS_KEY={c['SecretAccessKey']}")
+        print(f"export AWS_SESSION_TOKEN={c['SessionToken']}")
 
 
 def run():

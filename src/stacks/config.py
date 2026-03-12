@@ -42,7 +42,7 @@ def config_get_stack_config(config, stack_type, name):
     else:
         instance = config["instances"][name]
         stack_config = instance[stack_type]
-        # The stack is a service withing an instance, so import the account and
+        # The stack is a service within an instance, so import the account and
         # cluster from the instance
         stack_config.update(
             {

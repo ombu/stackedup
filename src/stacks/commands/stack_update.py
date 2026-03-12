@@ -2,7 +2,6 @@ import logging
 
 from stacks.command import StackCommand, get_boto_client, get_boto_credentials
 from stacks.config import (
-    config_get_account_id,
     config_get_cloudformation_bucket,
     config_get_stack_config,
     config_get_stack_region,
@@ -32,7 +31,6 @@ class UpdateCommand(StackCommand):
         else:
             account_name = self.stack.account_name
         credentials = get_boto_credentials()
-        account_id = config_get_account_id(self.config, self.args.stack_type, self.args.name)
         bucket = config_get_cloudformation_bucket(self.config, account_name)
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
         template_body = self.stack.package_template(credentials, bucket, region_name)
