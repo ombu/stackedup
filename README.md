@@ -125,7 +125,7 @@ For an instance service:
 ### Updating stacks
 
 After updating the parameters for an existing stack in the manifest
-(often `\_config.yaml`), update the stack:
+(often `config.yaml`), update the stack:
 
 For a cluster:
 
@@ -137,20 +137,17 @@ For an instance service:
 
 ### Overriding parameters with environment variables
 
-When using stackedup commands parameters for the stack come from the manifest
-(often `\_config.yaml`) and can be overridden with environment variables
-with the following condition:
+When using stackedup commands, parameters for the stack come from the manifest
+(often `config.yaml`). Any parameter key can be overridden by setting an
+environment variable with the same name as the parameter key.
 
- - If an environment variable exists with the same name as a parameter key in
-   the `\_config.yaml` manifest.
-
-Example: `\_config.yaml`
+Example: `config.yaml`
 
 ```yaml
 ---
 project_name: my-project
 
-...
+# ...
 
 instances:
 
@@ -164,7 +161,6 @@ instances:
         ClusterStack: my-project-cluster-dev-2005251008
         EnvironmentType: testing
         ImageTag: v1.0.11
-        ...
 ```
 
 Example override for the `ImageTag`:

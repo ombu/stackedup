@@ -73,11 +73,11 @@ class Stack:
 
     def get_parameters(self, formatting="json"):
         parameters = self.stack_config.get("parameters", {})
-        if parameters:
-            # Before getting parameters from the config.yaml manifest see if any
-            # of parameters from the Parameters: section of the manifest exist
-            # in environment variables, if so add the values to the parameters.
-            parameters = {k: (os.environ[k] if k in os.environ else v) for k, v in parameters.items()}
+        # Override manifest parameters with any matching environment variables.
+        for k in parameters:
+            if k in os.environ:
+                logger.info(f"Overriding parameter '{k}' with environment variable.")
+        parameters = {k: os.environ.get(k, v) for k, v in parameters.items()}
         if formatting == "json":
             return parameters
         if formatting == "cloudformation":
