@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## [0.1.0] - 2026-03-12
 
 ### Features
 
@@ -8,7 +8,7 @@
 
 ### Miscellaneous
 
-- Improve dev tooling and linting
+- Add pre-commit hooks and improve dev tooling
 
 ### Security
 
@@ -16,4 +16,4 @@
 
 * * *
 
-Stackedup started maintaining a changelog in release 0.0.15.
+Stackedup started maintaining a changelog in release 0.1.0

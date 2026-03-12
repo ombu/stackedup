@@ -25,7 +25,7 @@ body = """
 footer = """
 * * *
 
-Stackedup started maintaining a changelog in release 0.0.15
+Stackedup started maintaining a changelog in release 0.1.0
 """
 
 [bump]
