@@ -15,10 +15,10 @@ endif
 # HELPERS
 # ============================================================================ #
 
-## Command: Variable(s): Description
-## -------: -----------: -----------
+## Command: Description
+## -------: -----------
 
-## help: : Print this help message
+## help: Print this help message
 .PHONY: help
 help:
 	@echo 'Usage:'
@@ -31,12 +31,12 @@ guard-%:
 # TESTS
 # ============================================================================ #
 
-## test: : Run tests
+## test: Run tests
 .PHONY: test
 test:
 	pytest -Wa --color=yes --code-highlight=yes --cache-clear
 
-## coverage: : Run coverage report
+## coverage: Run coverage report
 .PHONY: coverage
 coverage:
 	python -m coverage erase
@@ -47,19 +47,19 @@ coverage:
 # BUILD
 # ============================================================================ #
 
-## build-dist: : Build the distribution archives
+## build-dist: Build the distribution archives
 .PHONY: build-dist
 build-dist:
 	python -m pip install -e ".[publish]"
 	python -m build
 
-## build-upload: : Upload the distribution archives
+## build-upload: Upload the distribution archives
 .PHONY: build-upload
 build-upload:
 	python -m pip install -e ".[publish]"
 	python -m twine upload dist/*
 
-## install-dist: : Install the local built distribution archives
+## install-dist: Install the local built distribution archives
 .PHONY: install-dist
 install-dist:
 	python -m pip install dist/stackedup-*.tar.gz
@@ -68,34 +68,34 @@ install-dist:
 # QUALITY CONTROL
 # ============================================================================ #
 
-## install: : Install the requirements
+## install: Install the requirements
 .PHONY: install
 install:
 	python -m pip install -e ".[dev]"
 
-## fmt-check: : Run all the format checks
+## fmt-check: Run all the format checks
 .PHONY: fmt-check
 fmt-check: fmt-check-python
 	 @echo "Passed format checks"
 
-## fmt-python: : Apply code formatting rules
+## fmt-python: Apply code formatting rules
 .PHONY: fmt-python
 fmt-python:
 	ruff format .
 
-## fmt-check-python: : Check code for incorrect formatting
+## fmt-check-python: Check code for incorrect formatting
 .PHONY: fmt-check-python
 fmt-check-python:
 	ruff check .
 
-## fmt-md: : Format the md files
+## fmt-md: Format the md files
 .PHONY: fmt-md
 fmt-md:
 	prettier README.md -w
 
-# ==================================================================================== #
-# Release
-# ==================================================================================== #
+# ============================================================================ #
+# RELEASE
+# ============================================================================ #
 
 # Revision when the project started automatically tracking changelog
 CHANGELOG_START_REV = "0.0.15"
