@@ -170,15 +170,21 @@ export ImageTag=v1.0.12
 stack-update application testing
 ```
 
-### Opening a shell session in a service container (==experimental==)
+### Opening a shell session in a service container
+
+## Install the AWS Session Manager plugin
+
+container-shell uses AWS Systems Manager Session Manager for interactive shell
+access and port forwarding. Before using any Session Manager–based commands,
+[install the Session Manager plugin for the AWS CLI](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html) on your local machine.
 
 For service stacks that run
 [ECS Services](<[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html)>)
-stacked up includes an experimental command to start a shell session in one of
-the service containers:
+stacked up includes a command to start a shell session in one of the service
+containers:
 
     $ container-shell <instance> <service> <service-name> <container>
-    ssh -t -i <ssh-key> ec2-user@ec2-54-218-12-133... docker exec -it 380f02d109d9a038e1e1909e0f31e85a6491312d3c29726b269bde8621ce1212 sh
+    aws ssm start-session --region us-west-2 --target i-068268093231b59fb --document-name AWS-StartInteractiveCommand --parameters command=["sudo docker exec -it 380f02d109d9a038e1e1909e0f31e85a6491312d3c29726b269bde8621ce1212 sh"]
 
 The command returns an SSH command, so it's often ran in backticks as command
 substitution:
