@@ -180,6 +180,26 @@ the service containers:
     $ container-shell <instance> <service> <service-name> <container>
     ssh -t -i <ssh-key> ec2-user@ec2-54-218-12-133... docker exec -it 380f02d109d9a038e1e1909e0f31e85a6491312d3c29726b269bde8621ce1212 sh
 
+By default the command uses EC2 Instance Connect instead of relying on the
+cluster's configured EC2 key pair. It looks for a standard public key in your
+local `~/.ssh` directory, uploads that key to the target instance, and then
+returns the SSH command that opens a shell inside the requested container. This
+lets you connect with the SSH key you already use locally, without requiring the
+instance to be launched with a matching long-lived key pair.
+
+The default key lookup checks for common SSH public key names such as
+`~/.ssh/id_ed25519.pub` and `~/.ssh/id_rsa.pub`. If no default public key is
+found, `container-shell` exits with an error instead of guessing.
+
+If you want to use a specific public key, pass it explicitly:
+
+    $ container-shell <instance> <service> <service-name> <container> --public_key ~/.ssh/my-custom-key.pub
+
+If you want the previous behavior and need to use the cluster's configured
+`KeyName`, pass:
+
+    $ container-shell <instance> <service> <service-name> <container> --config_key
+
 The command returns an SSH command, so it's often ran in backticks as command
 substitution:
 
