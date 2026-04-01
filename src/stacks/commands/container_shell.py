@@ -1,5 +1,4 @@
 import logging
-from os import path
 
 from stacks.command import InstanceCommand, get_boto_client
 from stacks.config import (
@@ -42,12 +41,6 @@ class ContainerShellCommand(InstanceCommand):
         self.argparser.add_argument("container_name", type=str)
 
     def run(self):
-        key_name = self.cluster_stack.get_parameters()["KeyName"]
-        ssh_key = path.join(path.expanduser("~"), ".ssh", key_name)
-        if not path.exists(ssh_key):
-            logger.error(f"Could not find the required SSH key {ssh_key}")
-            exit(1)
-
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
         cf_client = get_boto_client("cloudformation", region_name)
         stack_details = self.stack.get_details(cf_client)
@@ -86,18 +79,13 @@ class ContainerShellCommand(InstanceCommand):
             logger.error(f"Unable to find a container id for the task {task_id}")
             exit(1)
 
-        # Get the instance public IP from ec2 describe-instances
+        # Get the instance_id from ec2 describe-instances
         response = ecs_client.describe_container_instances(
             cluster=cluster_name, containerInstances=(container_instance_id,)
         )
         instance_id = response["containerInstances"][0]["ec2InstanceId"]
-        ec2_client = get_boto_client("ec2", region_name)
-        response = ec2_client.describe_instances(InstanceIds=(instance_id,))
-        public_dns_name = response["Reservations"][0]["Instances"][0]["PublicDnsName"]
 
-        ssh_command = (
-            f"ssh -t -i ~/.ssh/{key_name} ec2-user@{public_dns_name} docker exec -it {container_id} sh"
-        )
+        ssh_command = f'aws ssm start-session --region {region_name} --target {instance_id} --document-name AWS-StartInteractiveCommand --parameters command=["sudo docker exec -it {container_id} sh"]'
         print(ssh_command)
 
 
