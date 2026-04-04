@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2026-04-04
+
+### Features
+
+- *(container-shell)* Migrate from SSH to AWS SSM Session Manager
+
 ## [0.1.0] - 2026-03-12
 
 ### Features

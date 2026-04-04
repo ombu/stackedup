@@ -103,7 +103,11 @@ CHANGELOG_START_REV = "0.0.15"
 ## changelog/next: Preview the next changelog section for unreleased commits
 .PHONY: changelog/next
 changelog/next:
-	git-cliff --bump -u $(CHANGELOG_START_REV)..
+	git-cliff --ignore-tags=latest \
+		--tag-pattern=[0-9]\.[0-9]\.[0-9] \
+		--bump \
+		--latest
+
 
 ## changelog/generate: Write CHANGELOG.md from all tracked commits
 .PHONY: changelog/generate
