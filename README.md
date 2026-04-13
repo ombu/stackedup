@@ -150,7 +150,6 @@ project_name: my-project
 # ...
 
 instances:
-
   # testing
   testing:
     account: ombu
@@ -170,13 +169,16 @@ export ImageTag=v1.0.12
 stack-update application testing
 ```
 
-### Opening a shell session in a service container
+### Connecting to remote services
 
-## Install the AWS Session Manager plugin
+#### Install the AWS Session Manager plugin
 
-container-shell uses AWS Systems Manager Session Manager for interactive shell
-access and port forwarding. Before using any Session Manager–based commands,
+Both `container-shell` and `database-shell` use the AWS Systems Manager Session
+Manager for interactive shell access and port forwarding. Before using any
+Session Manager–based commands,
 [install the Session Manager plugin for the AWS CLI](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html) on your local machine.
+
+### Opening a shell session in a service container
 
 For service stacks that run
 [ECS Services](<[https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html)>)
@@ -191,6 +193,11 @@ substitution:
 
     $ `container-shell <instance> <service> <service-name> <container>`
     #    (← you are in container bash session)
+
+### Opening a database session for a service container
+
+    $ database-shell <instance> <service>
+    PGPASSWORD=<database-pass> psql -h 127.0.0.1 -p <local-db-port> -U <database-user> -d <database-pass> && aws ssm terminate-session --region <region-name> --session-id <session-id>
 
 ## AWS accounts
 
