@@ -1,10 +1,11 @@
 import json
 import logging
 import os
+import re
+import socket
 import subprocess
 import tempfile
 import time
-import re
 from pathlib import Path
 
 from stacks.command import InstanceCommand, get_boto_client
@@ -142,11 +143,14 @@ class DatabaseShellCommand(InstanceCommand):
         fd, path_str = tempfile.mkstemp(prefix="ssm-", suffix=".log")
         os.close(fd)
         log_path = Path(path_str)
+        ssm_proc = None
+        session_id = None
 
         try:
+            # Start SSM port-forwarding session
             try:
                 with open(log_path, "w") as log_file:
-                    subprocess.Popen(
+                    ssm_proc = subprocess.Popen(
                         ssm_command,
                         stdout=log_file,
                         stderr=log_file,
@@ -157,30 +161,79 @@ class DatabaseShellCommand(InstanceCommand):
                 logger.error(f"Failed to start SSM session: {e}")
                 exit(1)
 
-            # Wait for session ID to appear in log so the user can terminate the session cleanly
-            session_id = None
+            # Wait for the session ID to appear in the log before connecting
             timeout = time.time() + 30
-
             while time.time() < timeout:
                 text = log_path.read_text(errors="ignore")
                 match = re.search(r"SessionId[:\s]+([^\s]+)", text)
                 if match:
                     session_id = match.group(1)
-                    logger.info(f"Started session with session_id {session_id}")
+                    logger.info(f"Started SSM session {session_id}")
                     break
                 time.sleep(0.1)
 
             if not session_id:
-                logger.error(f"Timed out waiting for SessionId in {log_path}")
+                logger.error("Timed out waiting for SSM session to start")
                 exit(1)
+
+            # Wait for the local port to be accepting connections before launching psql
+            logger.info(f"Waiting for local port {local_db_port} to be ready...")
+            port_ready = False
+            timeout = time.time() + 30
+            while time.time() < timeout:
+                try:
+                    with socket.create_connection(("127.0.0.1", local_db_port), timeout=1):
+                        port_ready = True
+                        break
+                except OSError:
+                    time.sleep(0.1)
+
+            if not port_ready:
+                logger.error(f"Timed out waiting for local port {local_db_port} to be ready")
+                exit(1)
+
+            # Open the psql shell directly — blocks until the user exits
+            subprocess.run(
+                [
+                    "psql",
+                    "-h",
+                    "127.0.0.1",
+                    "-p",
+                    str(local_db_port),
+                    "-U",
+                    database_user,
+                    "-d",
+                    self.args.database,
+                ],
+                env={**os.environ, "PGPASSWORD": database_pass},
+            )
         finally:
             log_path.unlink(missing_ok=True)
-
-        connect_command = (
-            f"PGPASSWORD={database_pass} psql -h 127.0.0.1 -p {local_db_port} -U {database_user} -d {self.args.database}"
-            f"; aws ssm terminate-session --region {region_name} --session-id {session_id}"
-        )
-        print(connect_command)
+            # Always terminate the SSM session and stop the tunnel process
+            if session_id:
+                try:
+                    subprocess.run(
+                        [
+                            "aws",
+                            "ssm",
+                            "terminate-session",
+                            "--region",
+                            region_name,
+                            "--session-id",
+                            session_id,
+                        ],
+                        check=False,
+                        capture_output=True,
+                    )
+                    logger.info(f"Terminated SSM session {session_id}")
+                except OSError as e:
+                    logger.warning(f"Failed to terminate SSM session {session_id}: {e}")
+            if ssm_proc is not None:
+                ssm_proc.terminate()
+                try:
+                    ssm_proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    ssm_proc.kill()
 
 
 def run():

@@ -197,7 +197,11 @@ substitution:
 ### Opening a database session for a service container
 
     $ database-shell <instance> <service> <database>
-    PGPASSWORD=<database-pass> psql -h 127.0.0.1 -p <local-db-port> -U <database-user> -d <database-name>; aws ssm terminate-session --region <region-name> --session-id <session-id>
+    #    (← you are in a psql session against the remote database)
+
+The command opens an SSM port-forwarding tunnel to the RDS instance and starts
+an interactive `psql` session. When `psql` exits — normally, on error, or on
+Ctrl+C — the tunnel is automatically closed.
 
 ## AWS accounts
 
