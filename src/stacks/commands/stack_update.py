@@ -9,7 +9,6 @@ from stacks.config import (
 from stacks.stack import Stack
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
 
 class UpdateCommand(StackCommand):

@@ -4,7 +4,6 @@ from stacks.command import AccountCommand, get_boto_assumed_credentials
 from stacks.config import config_get_role
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
 
 
 class AssumeRoleCommand(AccountCommand):

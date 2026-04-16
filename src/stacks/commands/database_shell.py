@@ -16,7 +16,6 @@ from stacks.config import (
 from stacks.stack import Stack
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
 
 
 class DatabaseShellCommand(InstanceCommand):

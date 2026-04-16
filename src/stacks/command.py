@@ -1,5 +1,6 @@
 import argparse
 import logging
+import logging.handlers
 from functools import lru_cache
 
 import boto3
@@ -17,6 +18,7 @@ class BaseCommand:
         self.add_arguments()
         self.config = config_load(self.args.config)
         self.project_name = config_get_project_name(self.config)
+        logging.basicConfig(level=self.args.log_level, format="%(levelname)s - %(message)s")
 
     @property
     def args(self):
@@ -27,7 +29,12 @@ class BaseCommand:
             return self._args
 
     def add_arguments(self):
-        pass
+        self.argparser.add_argument(
+            "--log-level",
+            default="WARNING",
+            choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            help="Set the logging level (default: WARNING)",
+        )
 
     def run(self):
         pass
@@ -38,6 +45,7 @@ class StackCommand(BaseCommand):
         super().__init__(*args)
 
     def add_arguments(self):
+        super().add_arguments()
         self.argparser.add_argument("stack_type", type=str)
         self.argparser.add_argument(
             "name",
@@ -53,6 +61,7 @@ class AccountCommand(BaseCommand):
         super().__init__(*args)
 
     def add_arguments(self):
+        super().add_arguments()
         self.argparser.add_argument("account_name", type=str)
 
     def run(self):
@@ -99,6 +108,7 @@ class InstanceCommand(BaseCommand):
         super().__init__(*args)
 
     def add_arguments(self):
+        super().add_arguments()
         self.argparser.add_argument("name", type=str)
 
     def run(self):
