@@ -197,7 +197,7 @@ substitution:
 ### Opening a database session for a service container
 
     $ database-shell <instance> <service> <database>
-    PGPASSWORD=<database-pass> psql -h 127.0.0.1 -p <local-db-port> -U <database-user> -d <database-pass> && aws ssm terminate-session --region <region-name> --session-id <session-id>
+    PGPASSWORD=<database-pass> psql -h 127.0.0.1 -p <local-db-port> -U <database-user> -d <database-name>; aws ssm terminate-session --region <region-name> --session-id <session-id>
 
 ## AWS accounts
 

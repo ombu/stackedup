@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import subprocess
 import tempfile
 import time
@@ -14,10 +15,7 @@ from stacks.config import (
 from stacks.stack import Stack
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
-
-fd, path_str = tempfile.mkstemp(prefix="ssm-", suffix=".log")
-log_path = Path(path_str)
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
 
 
 class DatabaseShellCommand(InstanceCommand):
@@ -47,23 +45,21 @@ class DatabaseShellCommand(InstanceCommand):
         super().add_arguments()
         self.argparser.add_argument("service", type=str)
         self.argparser.add_argument("database", type=str)
+        self.argparser.add_argument(
+            "--local-port",
+            type=int,
+            default=25432,
+            help="Local port to forward the database connection to (default: 25432)",
+        )
 
     def run(self):
-        LOCAL_DB_PORT = 25432
+        local_db_port = self.args.local_port
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
         cf_client = get_boto_client("cloudformation", region_name)
         stack_details = self.stack.get_details(cf_client)
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
-        # Get database parameters
-        database_instance = ""
-        database_endpoint = ""
-        database_user_secret = ""
-        database_port = ""
-        database_user = ""
-        database_pass = ""
-
-        # Get database stack from service cluster stack
+        # Get database stack from service application stack
         database_stack = cf_client.describe_stack_resources(
             StackName=stack_details["StackId"], LogicalResourceId="Database"
         )
@@ -73,13 +69,31 @@ class DatabaseShellCommand(InstanceCommand):
         database_stack_details = cf_client.describe_stacks(StackName=database_stack_arn)
         database_stack_outputs = database_stack_details["Stacks"][0]["Outputs"]
 
+        database_instance = None
+        database_endpoint = None
+        database_user_secret = None
+
         for output in database_stack_outputs:
-            if output.get("OutputKey") == "DatabaseInstance":
+            key = output.get("OutputKey")
+            if key == "DatabaseInstance":
                 database_instance = output.get("OutputValue")
-            if output.get("OutputKey") == "DatabaseEndpoint":
+            elif key == "DatabaseEndpoint":
                 database_endpoint = output.get("OutputValue")
-            if output.get("OutputKey") == "DatabaseUserSecret":
+            elif key == "DatabaseUserSecret":
                 database_user_secret = output.get("OutputValue")
+
+        missing = [
+            k
+            for k, v in {
+                "DatabaseInstance": database_instance,
+                "DatabaseEndpoint": database_endpoint,
+                "DatabaseUserSecret": database_user_secret,
+            }.items()
+            if v is None
+        ]
+        if missing:
+            logger.error(f"Missing required database stack outputs: {', '.join(missing)}")
+            exit(1)
 
         rds_client = get_boto_client("rds", region_name)
         response = rds_client.describe_db_instances(DBInstanceIdentifier=database_instance)
@@ -87,27 +101,30 @@ class DatabaseShellCommand(InstanceCommand):
 
         secrets_client = get_boto_client("secretsmanager", region_name)
         response = secrets_client.get_secret_value(SecretId=database_user_secret)
-        secret_string = response["SecretString"]
-        database_user = json.loads(secret_string)["username"]
-        database_pass = json.loads(secret_string)["password"]
+        secret = json.loads(response["SecretString"])
+        database_user = secret["username"]
+        database_pass = secret["password"]
 
-        # Get the task id from list_tasks
+        # Get an active container instance to use as the SSM tunnel target
         ecs_client = get_boto_client("ecs", region_name)
-
-        # Get the container instance ARN
         response = ecs_client.list_container_instances(
             cluster=cluster_name,
             status="ACTIVE",
         )
-        container_instance_id = response["containerInstanceArns"][0]
+        container_instance_arns = response["containerInstanceArns"]
+        if not container_instance_arns:
+            logger.error(f"No active container instances found in cluster {cluster_name}")
+            exit(1)
+        container_instance_id = container_instance_arns[0]
 
-        # Get the instance_id from ec2 describe-instances
+        # Get the EC2 instance ID
         response = ecs_client.describe_container_instances(
             cluster=cluster_name, containerInstances=(container_instance_id,)
         )
         instance_id = response["containerInstances"][0]["ec2InstanceId"]
+        logger.info(f"Using EC2 instance {instance_id} for SSM tunnel")
 
-        # Start forward session
+        # Start port-forwarding session
         ssm_command = [
             "aws",
             "ssm",
@@ -119,43 +136,51 @@ class DatabaseShellCommand(InstanceCommand):
             "--document-name",
             "AWS-StartPortForwardingSessionToRemoteHost",
             "--parameters",
-            f"host={database_endpoint},portNumber={database_port},localPortNumber={LOCAL_DB_PORT}",
+            f"host={database_endpoint},portNumber={database_port},localPortNumber={local_db_port}",
         ]
 
-        # Detach AWS SSM process to keep it running
+        fd, path_str = tempfile.mkstemp(prefix="ssm-", suffix=".log")
+        os.close(fd)
+        log_path = Path(path_str)
+
         try:
-            subprocess.Popen(
-                f"nohup {' '.join(ssm_command)} >{log_path} 2>&1 < /dev/null &",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                start_new_session=True,
-                shell=True,  # nosec, need to have full command executed
-                text=True,
-            )
-            logger.info("Starting SSM Start Session...")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Failed to start SSM session: {e}")
-            exit(1)
+            try:
+                with open(log_path, "w") as log_file:
+                    subprocess.Popen(
+                        ssm_command,
+                        stdout=log_file,
+                        stderr=log_file,
+                        start_new_session=True,
+                    )
+                logger.info("Starting SSM port-forwarding session...")
+            except OSError as e:
+                logger.error(f"Failed to start SSM session: {e}")
+                exit(1)
 
-        # Get session id from log file so user can terminate after psql command
-        session_id = None
-        timeout = time.time() + 30
+            # Wait for session ID to appear in log so the user can terminate the session cleanly
+            session_id = None
+            timeout = time.time() + 30
 
-        while time.time() < timeout:
-            if log_path.exists():
+            while time.time() < timeout:
                 text = log_path.read_text(errors="ignore")
                 match = re.search(r"SessionId[:\s]+([^\s]+)", text)
                 if match:
                     session_id = match.group(1)
                     logger.info(f"Started session with session_id {session_id}")
                     break
-            time.sleep(0.1)
+                time.sleep(0.1)
 
-        if not session_id:
-            logger.error(f"Timed out waiting for SessionId in {log_path}")
+            if not session_id:
+                logger.error(f"Timed out waiting for SessionId in {log_path}")
+                exit(1)
+        finally:
+            log_path.unlink(missing_ok=True)
 
-        ssh_command = f"PGPASSWORD={database_pass} psql -h 127.0.0.1 -p {LOCAL_DB_PORT} -U {database_user} -d {self.args.database} && aws ssm terminate-session --region {region_name} --session-id {session_id}"
-        print(ssh_command)
+        connect_command = (
+            f"PGPASSWORD={database_pass} psql -h 127.0.0.1 -p {local_db_port} -U {database_user} -d {self.args.database}"
+            f"; aws ssm terminate-session --region {region_name} --session-id {session_id}"
+        )
+        print(connect_command)
 
 
 def run():
