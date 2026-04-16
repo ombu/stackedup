@@ -1,5 +1,10 @@
-import logging
 import json
+import logging
+import subprocess
+import tempfile
+import time
+import re
+from pathlib import Path
 
 from stacks.command import InstanceCommand, get_boto_client
 from stacks.config import (
@@ -9,7 +14,10 @@ from stacks.config import (
 from stacks.stack import Stack
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.WARNING, format="%(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+
+fd, path_str = tempfile.mkstemp(prefix="ssm-", suffix=".log")
+log_path = Path(path_str)
 
 
 class DatabaseShellCommand(InstanceCommand):
@@ -38,6 +46,7 @@ class DatabaseShellCommand(InstanceCommand):
     def add_arguments(self):
         super().add_arguments()
         self.argparser.add_argument("service", type=str)
+        self.argparser.add_argument("database", type=str)
 
     def run(self):
         LOCAL_DB_PORT = 25432
@@ -99,19 +108,53 @@ class DatabaseShellCommand(InstanceCommand):
         instance_id = response["containerInstances"][0]["ec2InstanceId"]
 
         # Start forward session
-        ssm_client = get_boto_client("ssm", region_name)
-        response = ssm_client.start_session(
-            Target=instance_id,
-            DocumentName="AWS-StartPortForwardingSessionToRemoteHost",
-            Parameters={
-                "host": [database_endpoint],
-                "portNumber": [str(database_port)],
-                "localPortNumber": [str(LOCAL_DB_PORT)],
-            },
-        )
-        session_id = response["SessionId"]
+        ssm_command = [
+            "aws",
+            "ssm",
+            "start-session",
+            "--region",
+            region_name,
+            "--target",
+            instance_id,
+            "--document-name",
+            "AWS-StartPortForwardingSessionToRemoteHost",
+            "--parameters",
+            f"host={database_endpoint},portNumber={database_port},localPortNumber={LOCAL_DB_PORT}",
+        ]
 
-        ssh_command = f"PGPASSWORD={database_pass} psql -h 127.0.0.1 -p {LOCAL_DB_PORT} -U {database_user} -d {database_pass} && aws ssm terminate-session --region {region_name} --session-id {session_id}"
+        # Detach AWS SSM process to keep it running
+        try:
+            subprocess.Popen(
+                f"nohup {' '.join(ssm_command)} >{log_path} 2>&1 < /dev/null &",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+                shell=True,  # nosec, need to have full command executed
+                text=True,
+            )
+            logger.info("Starting SSM Start Session...")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to start SSM session: {e}")
+            exit(1)
+
+        # Get session id from log file so user can terminate after psql command
+        session_id = None
+        timeout = time.time() + 30
+
+        while time.time() < timeout:
+            if log_path.exists():
+                text = log_path.read_text(errors="ignore")
+                match = re.search(r"SessionId[:\s]+([^\s]+)", text)
+                if match:
+                    session_id = match.group(1)
+                    logger.info(f"Started session with session_id {session_id}")
+                    break
+            time.sleep(0.1)
+
+        if not session_id:
+            logger.error(f"Timed out waiting for SessionId in {log_path}")
+
+        ssh_command = f"PGPASSWORD={database_pass} psql -h 127.0.0.1 -p {LOCAL_DB_PORT} -U {database_user} -d {self.args.database} && aws ssm terminate-session --region {region_name} --session-id {session_id}"
         print(ssh_command)
 
 
