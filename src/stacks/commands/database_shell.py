@@ -52,17 +52,31 @@ class DatabaseShellCommand(InstanceCommand):
             default=25432,
             help="Local port to forward the database connection to (default: 25432)",
         )
+        self.argparser.add_argument(
+            "--database-key",
+            type=str,
+            default="PostgresDatabase",
+            help="Database logical key in the stack (default: PostgresDatabase)",
+        )
 
     def run(self):
         local_db_port = self.args.local_port
+        database_key = self.args.database_key
         region_name = config_get_stack_region(self.config, self.stack.type, self.stack.name)
         cf_client = get_boto_client("cloudformation", region_name)
-        stack_details = self.stack.get_details(cf_client)
+
+        # Check for ClusterStack reference
+        if "ClusterStack" in self.stack.stack_config["parameters"]:
+            stack_details = self.cluster_stack.get_details(cf_client)
+        # If no ClusterStack parameter assume Database output in service stack
+        else:
+            stack_details = self.stack.get_details(cf_client)
+
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
-        # Get database stack from service application stack
+        # Get database stack from service cluster stack
         database_stack = cf_client.describe_stack_resources(
-            StackName=stack_details["StackId"], LogicalResourceId="Database"
+            StackName=stack_details["StackId"], LogicalResourceId=database_key
         )
         database_stack_arn = database_stack["StackResources"][0]["PhysicalResourceId"]
 
