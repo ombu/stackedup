@@ -56,14 +56,12 @@ class DatabaseShellCommand(InstanceCommand):
         self.argparser.add_argument(
             "--local-port",
             type=int,
-            default=25432,
-            help="Local port to forward the database connection to (default: 25432)",
+            help="Local port to forward the database connection to",
         )
         self.argparser.add_argument(
             "--database-key",
             type=str,
-            default="PostgresDatabase",
-            help="Database logical key in the stack (default: PostgresDatabase)",
+            help="Database logical key in the stack",
         )
 
     def run(self):
@@ -216,6 +214,11 @@ class DatabaseShellCommand(InstanceCommand):
 
             # Open the psql shell directly — blocks until the user exits
             if database_engine in RDS_ENGINES["postgres"]:
+                if not shutil.which("postgres"):
+                    logger.error("Error: postgres or mysql was not found")
+                    logger.error("Please install Postgres client and try again.")
+                    exit(1)
+
                 subprocess.run(
                     [
                         "psql",
@@ -233,10 +236,18 @@ class DatabaseShellCommand(InstanceCommand):
 
             # Open mysql shell directly — blocks until the user exits
             elif database_engine in RDS_ENGINES["mysql"]:
-                # Check to see if client has mariadb if not fallback to mysql
-                command = "mariadb"
-                if not shutil.which("mariadb"):
-                    command = "mysql"
+                # Check to see if client has mariadb or mysql
+                command = next(
+                    (cmd for cmd in ("mariadb", "mysql") if shutil.which(cmd)),
+                    None,
+                )
+
+                if command is None:
+                    logger.error("Error: mariadb or mysql was not found")
+                    logger.error(
+                        "Please install either the MariaDB client or the MySQL client and try again."
+                    )
+                    exit(1)
 
                 subprocess.run(
                     [
@@ -252,7 +263,7 @@ class DatabaseShellCommand(InstanceCommand):
                     env={**os.environ, "MYSQL_PWD": database_pass},
                 )
 
-            # Other support RDS engines are not currently supported
+            # Current implementation supports postgres and mysql RDS databases only
             else:
                 logger.error(f"{database_engine} not currently supported")
                 exit(1)

@@ -196,7 +196,7 @@ substitution:
 
 ### Opening a database session for a service container
 
-    $ database-shell <instance> <service> <database>
+    $ database-shell <instance> <service> <database> --local-port <local port for connect> --database-key <cluster logical resource key>
     #    (← you are in a psql session against the remote database)
 
 The command opens an SSM port-forwarding tunnel to the RDS instance and starts
