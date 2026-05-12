@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -16,6 +17,13 @@ from stacks.config import (
 from stacks.stack import Stack
 
 logger = logging.getLogger(__name__)
+
+# Supported RDS Engines
+# Valid engine keys at https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-rds-dbinstance.html#cfn-rds-dbinstance-engine
+RDS_ENGINES = {
+    "postgres": ["aurora-postgresql", "postgres"],
+    "mysql": ["aurora-mysql", "mariadb", "mysql"],
+}
 
 
 class DatabaseShellCommand(InstanceCommand):
@@ -48,14 +56,12 @@ class DatabaseShellCommand(InstanceCommand):
         self.argparser.add_argument(
             "--local-port",
             type=int,
-            default=25432,
-            help="Local port to forward the database connection to (default: 25432)",
+            help="Local port to forward the database connection to",
         )
         self.argparser.add_argument(
             "--database-key",
             type=str,
-            default="PostgresDatabase",
-            help="Database logical key in the stack (default: PostgresDatabase)",
+            help="Database logical key in the stack",
         )
 
     def run(self):
@@ -112,6 +118,7 @@ class DatabaseShellCommand(InstanceCommand):
         rds_client = get_boto_client("rds", region_name)
         response = rds_client.describe_db_instances(DBInstanceIdentifier=database_instance)
         database_port = response["DBInstances"][0]["Endpoint"]["Port"]
+        database_engine = response["DBInstances"][0]["Engine"]
 
         secrets_client = get_boto_client("secretsmanager", region_name)
         response = secrets_client.get_secret_value(SecretId=database_user_secret)
@@ -206,20 +213,61 @@ class DatabaseShellCommand(InstanceCommand):
                 exit(1)
 
             # Open the psql shell directly — blocks until the user exits
-            subprocess.run(
-                [
-                    "psql",
-                    "-h",
-                    "127.0.0.1",
-                    "-p",
-                    str(local_db_port),
-                    "-U",
-                    database_user,
-                    "-d",
-                    self.args.database,
-                ],
-                env={**os.environ, "PGPASSWORD": database_pass},
-            )
+            if database_engine in RDS_ENGINES["postgres"]:
+                if not shutil.which("postgres"):
+                    logger.error("Error: postgres or mysql was not found")
+                    logger.error("Please install Postgres client and try again.")
+                    exit(1)
+
+                subprocess.run(
+                    [
+                        "psql",
+                        "-h",
+                        "127.0.0.1",
+                        "-p",
+                        str(local_db_port),
+                        "-U",
+                        database_user,
+                        "-d",
+                        self.args.database,
+                    ],
+                    env={**os.environ, "PGPASSWORD": database_pass},
+                )
+
+            # Open mysql shell directly — blocks until the user exits
+            elif database_engine in RDS_ENGINES["mysql"]:
+                # Check to see if client has mariadb or mysql
+                command = next(
+                    (cmd for cmd in ("mariadb", "mysql") if shutil.which(cmd)),
+                    None,
+                )
+
+                if command is None:
+                    logger.error("Error: mariadb or mysql was not found")
+                    logger.error(
+                        "Please install either the MariaDB client or the MySQL client and try again."
+                    )
+                    exit(1)
+
+                subprocess.run(
+                    [
+                        command,
+                        "-h",
+                        "127.0.0.1",
+                        "-P",
+                        str(local_db_port),
+                        "-u",
+                        database_user,
+                        self.args.database,
+                    ],
+                    env={**os.environ, "MYSQL_PWD": database_pass},
+                )
+
+            # Current implementation supports postgres and mysql RDS databases only
+            else:
+                logger.error(f"{database_engine} not currently supported")
+                exit(1)
+
         finally:
             log_path.unlink(missing_ok=True)
             # Always terminate the SSM session and stop the tunnel process

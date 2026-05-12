@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2026-05-01
+
+### Features
+
+- *(database-shell)* Adds support for MySQL, and MariaDB databases
+
 ## [0.2.0] - 2026-04-04
 
 ### Features
