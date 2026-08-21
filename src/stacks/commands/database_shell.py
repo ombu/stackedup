@@ -214,9 +214,9 @@ class DatabaseShellCommand(InstanceCommand):
 
             # Open the psql shell directly — blocks until the user exits
             if database_engine in RDS_ENGINES["postgres"]:
-                if not shutil.which("postgres"):
-                    logger.error("Error: postgres or mysql was not found")
-                    logger.error("Please install Postgres client and try again.")
+                if not shutil.which("psql"):
+                    logger.error("Error: psql was not found")
+                    logger.error("Please install the Postgres client and try again.")
                     exit(1)
 
                 subprocess.run(
