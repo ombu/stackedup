@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.2] - 2026-08-21
+
+### Fixes
+
+- *(database-shell)* Fix PostgreSQL psql detection and error messaging
+
 ## [0.3.0] - 2026-05-01
 
 ### Features
