@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 import subprocess
-from typing import AnyStr, Dict
+from typing import AnyStr
 
 import boto3
 import botocore.exceptions
@@ -19,7 +19,7 @@ class Stack:
         stack_type: AnyStr,
         name: AnyStr,
         region: AnyStr,
-        stack_config: Dict,
+        stack_config: dict,
         template_dir: AnyStr = "templates",
     ):
         """
@@ -45,8 +45,8 @@ class Stack:
             return self.stack_config["stack_name"]
         except KeyError:
             # Create a stack name
-            date = f"{datetime.datetime.now():%Y%m%d%H%M}"
-            stack_name = "-".join((self.project_name, self.type, self.name, date))
+            date = f"{datetime.datetime.now(tz=datetime.timezone.utc):%Y%m%d%H%M}"
+            stack_name = f"{self.project_name}-{self.type}-{self.name}-{date}"
             logger.info(f"Setting stack name to {stack_name}")
             return stack_name
 

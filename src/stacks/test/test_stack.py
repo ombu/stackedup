@@ -10,7 +10,7 @@ from stacks.stack import Stack
 class TestStack:
     def test_stack_name_property(self, live_stack, new_stack):
         assert live_stack.stack_name == "the_stack_name"
-        fixed = datetime.datetime(2020, 1, 2, 3, 4, 5)
+        fixed = datetime.datetime(2020, 1, 2, 3, 4, 5, tzinfo=datetime.timezone.utc)
         with mock.patch("stacks.stack.datetime.datetime") as dt:
             dt.now.return_value = fixed
             assert new_stack.stack_name == "tests-cluster-core-202001020304"

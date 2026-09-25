@@ -38,7 +38,9 @@ def test_session_uses_cli_role_cache(tmp_path, monkeypatch):
 
 def test_exported_credentials_take_precedence(tmp_path, monkeypatch):
     config = tmp_path / "config"
-    config.write_text("[profile selected]\naws_access_key_id = profile-key\naws_secret_access_key = profile-secret\n")
+    config.write_text(
+        "[profile selected]\naws_access_key_id = profile-key\naws_secret_access_key = profile-secret\n"
+    )
     monkeypatch.setenv("AWS_CONFIG_FILE", str(config))
     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", str(tmp_path / "credentials"))
     monkeypatch.setenv("AWS_PROFILE", "selected")

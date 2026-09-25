@@ -1,10 +1,11 @@
 import logging
+
+from stacks.command import StackCommand, get_boto_client
 from stacks.config import (
     config_get_stack_config,
     config_get_stack_region,
 )
 from stacks.stack import Stack
-from stacks.command import StackCommand, get_boto_client
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class OutputsCommand(StackCommand):
         print(f"\nStack Name: {self.stack.stack_name}")
         print(f"Status: {details['StackStatus']}\n")
         print(Stack.tabulate_results(details["Parameters"]) + "\n")
-        if "Outputs" in details.keys():
+        if "Outputs" in details:
             print(Stack.tabulate_results(details["Outputs"]))
 
 

@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from stacks.command import InstanceCommand, get_boto_client
 from stacks.config import (
@@ -46,14 +47,14 @@ class ContainerShellCommand(InstanceCommand):
         cluster_name = self.cluster_stack.get_output(cf_client, "ECSClusterName")
 
         try:
-            service_name = [
+            service_name = next(
                 d["OutputValue"]
                 for d in stack_details["Outputs"]
                 if d["OutputKey"] == f"ServiceName{self.args.ecsservice}"
-            ][0]
-        except IndexError:
+            )
+        except StopIteration:
             logger.error(f"Unable to find output ServiceName{self.args.ecsservice} in {cluster_name}")
-            exit(1)
+            sys.exit(1)
 
         # Get the task id from list_tasks
         ecs_client = get_boto_client("ecs", region_name)
@@ -66,17 +67,16 @@ class ContainerShellCommand(InstanceCommand):
         # Get the container instance ARN and the container id from ecs describe_tasks
         response = ecs_client.describe_tasks(cluster=cluster_name, tasks=(task_id,))
         container_instance_id = response["tasks"][0]["containerInstanceArn"]
-        container_id = None
         try:
-            container_id = [
+            container_id = next(
                 d["runtimeId"]
                 for d in response["tasks"][0]["containers"]
                 if d["name"] == self.args.container_name
-            ][0]
+            )
             logger.info(f"Found an instance {container_instance_id} running the container {container_id}")
-        except KeyError:
+        except (KeyError, StopIteration):
             logger.error(f"Unable to find a container id for the task {task_id}")
-            exit(1)
+            sys.exit(1)
 
         # Get the instance_id from ec2 describe-instances
         response = ecs_client.describe_container_instances(

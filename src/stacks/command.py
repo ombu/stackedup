@@ -89,8 +89,10 @@ def get_boto_credentials():
 
 @lru_cache(maxsize=10)
 def get_boto_assumed_credentials(role_arn, account_name):
-    response = get_boto_session().client("sts").assume_role(
-        RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
+    response = (
+        get_boto_session()
+        .client("sts")
+        .assume_role(RoleArn=role_arn, RoleSessionName=f"{account_name}_session")
     )
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]

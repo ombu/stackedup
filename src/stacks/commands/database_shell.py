@@ -5,6 +5,7 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -113,7 +114,7 @@ class DatabaseShellCommand(InstanceCommand):
         ]
         if missing:
             logger.error(f"Missing required database stack outputs: {', '.join(missing)}")
-            exit(1)
+            sys.exit(1)
 
         rds_client = get_boto_client("rds", region_name)
         response = rds_client.describe_db_instances(DBInstanceIdentifier=database_instance)
@@ -135,7 +136,7 @@ class DatabaseShellCommand(InstanceCommand):
         container_instance_arns = response["containerInstanceArns"]
         if not container_instance_arns:
             logger.error(f"No active container instances found in cluster {cluster_name}")
-            exit(1)
+            sys.exit(1)
         container_instance_id = container_instance_arns[0]
 
         # Get the EC2 instance ID
@@ -179,7 +180,7 @@ class DatabaseShellCommand(InstanceCommand):
                 logger.info("Starting SSM port-forwarding session...")
             except OSError as e:
                 logger.error(f"Failed to start SSM session: {e}")
-                exit(1)
+                sys.exit(1)
 
             # Wait for the session ID to appear in the log before connecting
             timeout = time.time() + 30
@@ -194,7 +195,7 @@ class DatabaseShellCommand(InstanceCommand):
 
             if not session_id:
                 logger.error("Timed out waiting for SSM session to start")
-                exit(1)
+                sys.exit(1)
 
             # Wait for the local port to be accepting connections before launching psql
             logger.info(f"Waiting for local port {local_db_port} to be ready...")
@@ -210,14 +211,14 @@ class DatabaseShellCommand(InstanceCommand):
 
             if not port_ready:
                 logger.error(f"Timed out waiting for local port {local_db_port} to be ready")
-                exit(1)
+                sys.exit(1)
 
             # Open the psql shell directly — blocks until the user exits
             if database_engine in RDS_ENGINES["postgres"]:
                 if not shutil.which("psql"):
                     logger.error("Error: psql was not found")
                     logger.error("Please install the Postgres client and try again.")
-                    exit(1)
+                    sys.exit(1)
 
                 subprocess.run(
                     [
@@ -232,6 +233,7 @@ class DatabaseShellCommand(InstanceCommand):
                         self.args.database,
                     ],
                     env={**os.environ, "PGPASSWORD": database_pass},
+                    check=False,
                 )
 
             # Open mysql shell directly — blocks until the user exits
@@ -247,7 +249,7 @@ class DatabaseShellCommand(InstanceCommand):
                     logger.error(
                         "Please install either the MariaDB client or the MySQL client and try again."
                     )
-                    exit(1)
+                    sys.exit(1)
 
                 subprocess.run(
                     [
@@ -261,12 +263,13 @@ class DatabaseShellCommand(InstanceCommand):
                         self.args.database,
                     ],
                     env={**os.environ, "MYSQL_PWD": database_pass},
+                    check=False,
                 )
 
             # Current implementation supports postgres and mysql RDS databases only
             else:
                 logger.error(f"{database_engine} not currently supported")
-                exit(1)
+                sys.exit(1)
 
         finally:
             log_path.unlink(missing_ok=True)
