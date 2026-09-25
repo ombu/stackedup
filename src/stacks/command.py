@@ -3,8 +3,9 @@ import logging
 import logging.handlers
 from functools import lru_cache
 
-import boto3
+from botocore.exceptions import NoCredentialsError
 
+from stacks.aws import get_boto_session
 from stacks.config import config_get_project_name, config_load
 
 logger = logging.getLogger(__name__)
@@ -70,20 +71,14 @@ class AccountCommand(BaseCommand):
 
 @lru_cache(maxsize=10)
 def get_boto_client(client_type, region_name):
-    credentials = get_boto_credentials()
-    return boto3.client(
-        client_type,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-        region_name=region_name,
-    )
+    return get_boto_session().client(client_type, region_name=region_name)
 
 
-@lru_cache(maxsize=10)
 def get_boto_credentials():
-    session = boto3.Session()
-    credentials = session.get_credentials().get_frozen_credentials()
+    credentials = get_boto_session().get_credentials()
+    if credentials is None:
+        raise NoCredentialsError()
+    credentials = credentials.get_frozen_credentials()
     logger.info("Get current session credentials")
     return {
         "AccessKeyId": credentials.access_key,
@@ -94,7 +89,9 @@ def get_boto_credentials():
 
 @lru_cache(maxsize=10)
 def get_boto_assumed_credentials(role_arn, account_name):
-    response = boto3.client("sts").assume_role(RoleArn=role_arn, RoleSessionName=f"{account_name}_session")
+    response = get_boto_session().client("sts").assume_role(
+        RoleArn=role_arn, RoleSessionName=f"{account_name}_session"
+    )
     logger.info(f"Assuming role {role_arn}")
     return response["Credentials"]
 

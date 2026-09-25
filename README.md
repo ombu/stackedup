@@ -95,6 +95,29 @@ To run any stackedup command, your AWS CLI environment must be configured such
 that you are able to assume the roles included in the accounts section of the
 instance manifest.
 
+### AWS credentials
+
+Stackedup accepts exported AWS credentials or an AWS profile selected with
+`AWS_PROFILE`. It uses the standard Boto3 credential chain, including cached SSO
+sessions and assumed-role credentials in `~/.aws/cli/cache`.
+
+For an SSO profile:
+
+```sh
+aws sso login --profile my-sso-profile
+export AWS_PROFILE=my-profile
+stack-details application testing
+```
+
+For a cross-account role, log in with its source SSO profile and select the role
+profile with `AWS_PROFILE`. If your shell provides `aws_login`, simply run
+`aws_login my-profile` before using stackedup. No credential exports are needed.
+Expired SSO sessions require another login; refreshable role credentials are
+renewed automatically.
+
+Exported `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`
+take precedence over profile credentials. Unset them when switching to a profile.
+
 ### Before using commands
 
 Use the following command if your current AWS CLI session is not in the target

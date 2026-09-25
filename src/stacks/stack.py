@@ -125,7 +125,7 @@ class Stack:
                 **os.environ,
                 "AWS_ACCESS_KEY_ID": credentials["AccessKeyId"],
                 "AWS_SECRET_ACCESS_KEY": credentials["SecretAccessKey"],
-                "AWS_SESSION_TOKEN": credentials["SessionToken"],
+                "AWS_SESSION_TOKEN": credentials["SessionToken"] or "",
             },
         )
         # Run the template through PyYaml, to catch formatting issues from

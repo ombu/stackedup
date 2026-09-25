@@ -1,7 +1,8 @@
 import logging
 
-import boto3
 import yaml
+
+from stacks.aws import get_boto_session
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ def _pluralize_component_name(name):
 
 
 def config_get_active_account_id():
-    return boto3.client("sts").get_caller_identity().get("Account")
+    return get_boto_session().client("sts").get_caller_identity().get("Account")
 
 
 def config_get_cloudformation_bucket(config, account):

@@ -36,7 +36,9 @@ class TestConfig:
     def test_config_get_active_account_id_calls_sts(self):
         sts = mock.Mock()
         sts.get_caller_identity.return_value = {"Account": "111"}
-        with mock.patch("stacks.config.boto3.client", return_value=sts) as client:
+        with mock.patch("stacks.config.get_boto_session") as session:
+            client = session.return_value.client
+            client.return_value = sts
             assert config_get_active_account_id() == "111"
             client.assert_called_once_with("sts")
             sts.get_caller_identity.assert_called_once_with()
