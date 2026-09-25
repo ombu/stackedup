@@ -1,6 +1,6 @@
 # Stackedup
 
-[![Python tests](https://github.com/ombu/stacks/actions/workflows/python-tests.yml/badge.svg)](https://github.com/ombu/stacks/actions/workflows/python-tests.yml)
+[![CI](https://github.com/ombu/stacks/actions/workflows/ci.yml/badge.svg)](https://github.com/ombu/stacks/actions/workflows/ci.yml)
 
 stackedup provides tools to launch and manage micro-service based applications
 in AWS using CloudFormation.

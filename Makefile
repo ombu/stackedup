@@ -83,9 +83,10 @@ fmt-check: fmt-check-python
 fmt-python:
 	ruff format .
 
-## fmt-check-python: Check code for incorrect formatting
+## fmt-check-python: Check code for incorrect formatting and lint errors
 .PHONY: fmt-check-python
 fmt-check-python:
+	ruff format --check .
 	ruff check .
 
 ## fmt-md: Format the md files
